@@ -16,9 +16,9 @@ USE FinovaDB;
 GO
 
 -- ============================================================
-// TABLA: Usuarios
-// Almacena los usuarios del sistema con roles y credenciales
-// ============================================================
+-- TABLA: Usuarios
+-- Almacena los usuarios del sistema con roles y credenciales
+-- ============================================================
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Usuarios]') AND type in (N'U'))
 BEGIN
     CREATE TABLE Usuarios (
@@ -35,9 +35,9 @@ END
 GO
 
 -- ============================================================
-// TABLA: Inventario
-// Almacena los productos del inventario con cantidades y costos
-// ============================================================
+-- TABLA: Inventario
+-- Almacena los productos del inventario con cantidades y costos
+-- ============================================================
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Inventario]') AND type in (N'U'))
 BEGIN
     CREATE TABLE Inventario (
@@ -55,9 +55,9 @@ END
 GO
 
 -- ============================================================
-// TABLA: Costos
-// Almacena los registros de costos predeterminados calculados
-// ============================================================
+-- TABLA: Costos
+-- Almacena los registros de costos predeterminados calculados
+-- ============================================================
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Costos]') AND type in (N'U'))
 BEGIN
     CREATE TABLE Costos (
@@ -89,9 +89,9 @@ END
 GO
 
 -- ============================================================
-// TABLA: Proyecciones
-// Cabecera de las proyecciones de inventario
-// ============================================================
+-- TABLA: Proyecciones
+-- Cabecera de las proyecciones de inventario
+-- ============================================================
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Proyecciones]') AND type in (N'U'))
 BEGIN
     CREATE TABLE Proyecciones (
@@ -108,9 +108,10 @@ END
 GO
 
 -- ============================================================
-// TABLA: ProyeccionDetalle
-// Detalle de cada item en una proyeccion de inventario
-// ============================================================
+-- TABLA: ProyeccionDetalle
+-- Detalle de cada item en una proyeccion de inventario
+-- NOTA: Se elimina en cascada cuando se elimina la proyeccion padre
+-- ============================================================
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[ProyeccionDetalle]') AND type in (N'U'))
 BEGIN
     CREATE TABLE ProyeccionDetalle (
@@ -132,9 +133,9 @@ END
 GO
 
 -- ============================================================
-// TABLA: AuditoriaLog
-// Registro de auditoria de todas las acciones del sistema
-// ============================================================
+-- TABLA: AuditoriaLog
+-- Registro de auditoria de todas las acciones del sistema
+-- ============================================================
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[AuditoriaLog]') AND type in (N'U'))
 BEGIN
     CREATE TABLE AuditoriaLog (
@@ -151,9 +152,9 @@ END
 GO
 
 -- ============================================================
-// TABLA: Sesiones
-// Sesiones activas con tokens JWT para autenticacion
-// ============================================================
+-- TABLA: Sesiones
+-- Sesiones activas con tokens JWT para autenticacion
+-- ============================================================
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Sesiones]') AND type in (N'U'))
 BEGIN
     CREATE TABLE Sesiones (
@@ -165,4 +166,7 @@ BEGIN
         Activa          BIT           NOT NULL DEFAULT 1
     );
 END
+GO
+
+PRINT '✅ Tablas creadas correctamente en FinovaDB';
 GO
