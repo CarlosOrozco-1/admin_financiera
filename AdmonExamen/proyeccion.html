@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="FINOVA — Proyección de Inventario">
+    <title>Proyección de Inventario | FINOVA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/inventory.css">
+    <link rel="stylesheet" href="css/results.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="js/database.js"></script>
+    <script src="js/audit.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/theme.js"></script>
+</head>
+<body>
+    <div class="app-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header"><img src="FINOVA-LOGO/Logotipo-Dark.png" alt="FINOVA" class="sidebar-logo"></div>
+            <nav class="sidebar-nav">
+                <span class="sidebar-section-label">Principal</span>
+                <a href="dashboard.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</a>
+                <a href="costos.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>Costos</a>
+                <span class="sidebar-section-label">Inventarios</span>
+                <a href="inventario.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>Inventario</a>
+                <a href="proyeccion.html" class="sidebar-link active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Proyección</a>
+                <span class="sidebar-section-label">Sistema</span>
+                <a href="auditoria.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Auditoría</a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="sidebar-user"><div class="sidebar-avatar" id="sidebarAvatar">A</div><div class="sidebar-user-info"><div class="sidebar-user-name" id="sidebarUserName">Admin</div><div class="sidebar-user-role" id="sidebarUserRole">admin</div></div></div>
+                <button class="sidebar-logout" onclick="FiNovaAuth.logout()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Cerrar sesión</button>
+            </div>
+        </aside>
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+        <div class="main-area">
+            <header class="top-bar">
+                <div class="top-bar-left">
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+                    <div class="page-title-bar"><h1 class="page-title">Proyección de Inventario</h1><span class="page-breadcrumb">FINOVA / Proyección</span></div>
+                </div>
+                <div class="top-bar-right">
+                    <div class="theme-switcher">
+                        <button class="theme-btn" id="btn-toggle-dark" onclick="toggleClaroOscuro()"><svg id="theme-icon-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg><span id="theme-text-toggle">Tema</span></button>
+                        <button class="theme-btn" id="btn-toggle-brisa" onclick="toggleBrisa()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 11.5 22 9 18 9C17 9 16.5 9.5 15.5 9.5C14.5 9.5 13.5 8.5 13.5 7.5C13.5 6.5 14 6 14 5C14 2 11.5 2 9.5 2C4.5 2 2 6 2 11C2 17 6.5 22 12 22Z"/><circle cx="7.5" cy="10.5" r="1" fill="currentColor"/><circle cx="11.5" cy="7.5" r="1" fill="currentColor"/><circle cx="16.5" cy="11.5" r="1" fill="currentColor"/></svg>Brisa</button>
+                    </div>
+                </div>
+            </header>
+
+            <main class="page-container">
+                <!-- Controls -->
+                <div class="card" style="margin-bottom: 1.25rem;">
+                    <div class="section-header" style="margin-bottom: 1rem;">
+                        <div class="section-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+                        <div><h2 class="section-title">Configuración de Proyección</h2><p class="section-subtitle">Define el porcentaje de crecimiento esperado</p></div>
+                    </div>
+                    <div class="form-grid" style="grid-template-columns: 1fr 1fr 1fr auto;">
+                        <div class="form-group">
+                            <label for="growthPct">Crecimiento proyectado (%)</label>
+                            <input type="number" id="growthPct" value="15" min="-100" step="1" oninput="generateProjection()">
+                        </div>
+                        <div class="form-group">
+                            <label for="projPeriod">Período</label>
+                            <input type="text" id="projPeriod" value="Próximo trimestre" placeholder="Ej: Q3 2026">
+                        </div>
+                        <div class="form-group" style="justify-content:flex-end;">
+                            <label>&nbsp;</label>
+                            <div style="display:flex; gap:0.5rem;">
+                                <button class="btn btn-primary" onclick="generateProjection()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Generar</button>
+                                <button class="btn btn-success" onclick="saveProj()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>Guardar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart -->
+                <div class="chart-container">
+                    <div class="chart-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Comparación: Inventario Actual vs Proyectado</div>
+                    <div class="chart-wrapper"><canvas id="projChart"></canvas></div>
+                </div>
+
+                <!-- Table -->
+                <div class="card" style="margin-bottom: 1.25rem;">
+                    <div class="module-toolbar" style="margin-bottom:0.75rem;">
+                        <h3 style="font-size:0.92rem; font-weight:650; color:var(--text-primary);">Detalle de Proyección</h3>
+                        <div class="toolbar-actions">
+                            <button class="btn btn-secondary" onclick="exportProjExcel()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Excel</button>
+                            <button class="btn btn-secondary" onclick="exportProjPDF()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>PDF</button>
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table><thead><tr><th>Producto</th><th>Actual</th><th>Proyectado</th><th>Diferencia</th><th>% Cambio</th><th>Valor Actual</th><th>Valor Proyectado</th></tr></thead>
+                        <tbody id="projBody"><tr><td colspan="7"><div class="empty-state"><p>Genere una proyección para ver los datos</p></div></td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Analysis -->
+                <div class="card">
+                    <div class="report-section" style="margin-top:0;">
+                        <div class="report-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Análisis de Proyección</div>
+                        <div class="report-text" id="projAnalysis"><p style="color: var(--text-muted); font-style: italic;">Genere una proyección para ver el análisis comparativo.</p></div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"><div class="toast-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><polyline points="20 6 9 17 4 12"/></svg></div><span class="toast-text" id="toastText"></span></div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/inventory.js"></script>
+    <script src="js/inventory-projection.js"></script>
+    <script src="js/excel-handler.js"></script>
+    <script src="js/pdf-export.js"></script>
+    <script>
+    if (!FiNovaAuth.requireAuth()) {}
+    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidebarOverlay').classList.toggle('active'); }
+    function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebarOverlay').classList.remove('active'); }
+    function showToast(msg) { const t = document.getElementById('toast'); document.getElementById('toastText').textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
+
+    let projChart = null;
+    let currentProjection = [];
+
+    function generateProjection() {
+        const pct = parseFloat(document.getElementById('growthPct').value) || 0;
+        const items = FiNovaInventory.getAll();
+        currentProjection = FiNovaProjection.generate(items, pct);
+        renderTable();
+        renderChart();
+        renderAnalysis();
+    }
+
+    function renderTable() {
+        const body = document.getElementById('projBody');
+        if (currentProjection.length === 0) {
+            body.innerHTML = '<tr><td colspan="7"><div class="empty-state"><p>No hay productos en inventario</p></div></td></tr>';
+            return;
+        }
+        body.innerHTML = currentProjection.map(p => {
+            const cls = p.diferencia > 0 ? 'diff-positive' : p.diferencia < 0 ? 'diff-negative' : 'diff-neutral';
+            return `<tr>
+                <td style="font-weight:550;">${p.nombre}</td>
+                <td>${p.cantidadActual.toLocaleString('es-GT')}</td>
+                <td style="font-weight:600; color:var(--accent);">${p.cantidadProyectada.toLocaleString('es-GT')}</td>
+                <td class="${cls}">${p.diferencia > 0 ? '+' : ''}${p.diferencia.toLocaleString('es-GT')}</td>
+                <td class="${cls}">${p.porcentaje}</td>
+                <td>Q ${p.valorActual.toLocaleString('es-GT', {minimumFractionDigits:2})}</td>
+                <td style="font-weight:600;">Q ${p.valorProyectado.toLocaleString('es-GT', {minimumFractionDigits:2})}</td>
+            </tr>`;
+        }).join('');
+    }
+
+    function renderChart() {
+        const ctx = document.getElementById('projChart').getContext('2d');
+        if (projChart) projChart.destroy();
+
+        const labels = currentProjection.map(p => p.nombre.length > 15 ? p.nombre.slice(0, 15) + '…' : p.nombre);
+        projChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'Actual', data: currentProjection.map(p => p.cantidadActual), backgroundColor: 'rgba(13,148,136,0.6)', borderColor: '#0d9488', borderWidth: 1, borderRadius: 6 },
+                    { label: 'Proyectado', data: currentProjection.map(p => p.cantidadProyectada), backgroundColor: 'rgba(78,187,106,0.6)', borderColor: '#4ebb6a', borderWidth: 1, borderRadius: 6 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { position: 'top', labels: { font: { family: 'Inter', size: 12 }, usePointStyle: true, pointStyle: 'rectRounded' } } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { family: 'Inter', size: 11 } } },
+                    x: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 10 }, maxRotation: 45 } }
+                }
+            }
+        });
+    }
+
+    function renderAnalysis() {
+        document.getElementById('projAnalysis').innerHTML = FiNovaProjection.generateAnalysis(currentProjection);
+    }
+
+    function saveProj() {
+        const pct = parseFloat(document.getElementById('growthPct').value) || 0;
+        FiNovaProjection.saveProjection(currentProjection, pct);
+        showToast('Proyección guardada');
+    }
+
+    function exportProjExcel() {
+        const data = [['Producto', 'Actual', 'Proyectado', 'Diferencia', '% Cambio', 'Valor Actual', 'Valor Proyectado']];
+        currentProjection.forEach(p => data.push([p.nombre, p.cantidadActual, p.cantidadProyectada, p.diferencia, p.porcentaje, p.valorActual, p.valorProyectado]));
+        FiNovaExcel.exportToExcel(data, 'FINOVA_Proyeccion', 'Proyección');
+        FiNovaAudit.log('Proyección', 'Exportar Excel', `${currentProjection.length} productos`);
+        showToast('Proyección exportada a Excel');
+    }
+
+    function exportProjPDF() {
+        FiNovaPDF.exportProyeccion(currentProjection, `Proyección - ${document.getElementById('projPeriod').value}`);
+        FiNovaAudit.log('Proyección', 'Exportar PDF', `${currentProjection.length} productos`);
+        showToast('PDF generado');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const s = FiNovaAuth.getSession();
+        if (s) { document.getElementById('sidebarUserName').textContent = s.nombre; document.getElementById('sidebarUserRole').textContent = s.role; document.getElementById('sidebarAvatar').textContent = s.nombre.charAt(0).toUpperCase(); }
+        generateProjection();
+    });
+    </script>
+</body>
+</html>

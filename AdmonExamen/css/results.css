@@ -1,0 +1,164 @@
+/* ============================================================
+   RESULTS & REPORT
+   Tarjetas de resultados, informe, análisis, explicación
+   ============================================================ */
+
+/* ---- RESULT CARDS GRID ---- */
+.results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+
+.result-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    text-align: center;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.result-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+}
+
+.result-card.standard::before { background: var(--accent); }
+.result-card.real::before { background: #3b82f6; }
+.result-card.variation::before { background: #e67e22; }
+.result-card.status::before { background: var(--green); }
+
+.result-card:hover {
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-1px);
+}
+
+.result-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: 0.35rem;
+}
+
+.result-value {
+    font-size: 1.4rem;
+    font-weight: 750;
+    letter-spacing: -0.02em;
+}
+
+.result-value.purple { color: var(--accent); }
+.result-value.blue { color: #3b82f6; }
+.result-value.yellow { color: #e67e22; }
+
+/* ---- REPORT SECTION ---- */
+.report-section {
+    background: var(--bg-footer-row);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1.25rem;
+    margin-top: 1rem;
+}
+
+.report-title {
+    font-size: 0.88rem;
+    font-weight: 650;
+    color: var(--text-primary);
+    margin-bottom: 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.report-title svg {
+    width: 16px;
+    height: 16px;
+    color: var(--accent);
+}
+
+.report-text {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.75;
+}
+
+.report-text strong {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.report-table {
+    width: 100%;
+    margin: 0;
+}
+
+.report-table td {
+    padding: 0.55rem 0.85rem;
+    border-bottom: 1px solid #f0f1f5;
+}
+
+.report-table td:first-child {
+    font-weight: 550;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+}
+
+.report-table td:last-child {
+    text-align: right;
+    font-weight: 650;
+    font-size: 0.92rem;
+}
+
+/* ---- EXPLANATION CARD ---- */
+.explanation-card {
+    background: var(--accent-bg);
+    border: 1px solid #dce0ff;
+    border-radius: var(--radius-md);
+    padding: 1.2rem 1.4rem;
+    margin-top: 1.5rem;
+}
+
+.explanation-card h4 {
+    font-size: 0.85rem;
+    font-weight: 650;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.explanation-card p, .explanation-card li {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+
+.explanation-card ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.explanation-card li {
+    padding: 0.15rem 0;
+    padding-left: 1.1rem;
+    position: relative;
+}
+
+.explanation-card li::before {
+    content: '›';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 1rem;
+}
