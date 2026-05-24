@@ -16,7 +16,7 @@ public class Sesion
 
     public int UsuarioId { get; set; }
 
-    [Required, MaxLength(500)]
+    [Required]
     public string Token { get; set; } = string.Empty;
 
     public DateTime FechaInicio { get; set; } = DateTime.UtcNow;
