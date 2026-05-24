@@ -160,7 +160,7 @@ BEGIN
     CREATE TABLE Sesiones (
         Id              INT IDENTITY(1,1) PRIMARY KEY,
         UsuarioId       INT           NOT NULL,
-        Token           NVARCHAR(255) NOT NULL UNIQUE,
+        Token           NVARCHAR(500) NOT NULL UNIQUE,
         FechaInicio     DATETIME2     NOT NULL DEFAULT GETDATE(),
         FechaExpiracion DATETIME2     NOT NULL,
         Activa          BIT           NOT NULL DEFAULT 1

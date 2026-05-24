@@ -143,9 +143,13 @@ public class AuthService
     /*
      * Calcula el hash SHA256 de una contrasena y lo devuelve en formato hexadecimal.
      */
+    /*
+     * Calcula el hash SHA256 de una contrasena y lo devuelve en formato hexadecimal MAYUSCULAS.
+     * NOTA: Debe coincidir con el formato de SQL Server: CONVERT(NVARCHAR(64), HASHBYTES('SHA2_256', ...), 2)
+     */
     private static string ComputeSha256Hash(string rawData)
     {
         var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(rawData));
-        return Convert.ToHexStringLower(bytes);
+        return Convert.ToHexString(bytes);
     }
 }
