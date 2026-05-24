@@ -1,0 +1,6 @@
+@FinovaApi_HostAddress = http://localhost:5190
+
+GET {{FinovaApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

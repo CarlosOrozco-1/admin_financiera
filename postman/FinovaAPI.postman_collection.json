@@ -14,11 +14,6 @@
 					"name": "Login",
 					"request": {
 						"method": "POST",
-						"url": {
-							"raw": "{{baseUrl}}/api/auth/login",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "auth", "login"]
-						},
 						"header": [
 							{
 								"key": "Content-Type",
@@ -29,100 +24,95 @@
 							"mode": "raw",
 							"raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}"
 						},
-						"description": "Inicia sesion y devuelve un token JWT"
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "login"]
+						}
 					}
 				},
 				{
 					"name": "Logout",
 					"request": {
 						"method": "POST",
-						"url": {
-							"raw": "{{baseUrl}}/api/auth/logout",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "auth", "logout"]
-						},
 						"header": [
 							{
 								"key": "Authorization",
 								"value": "Bearer {{token}}"
 							}
 						],
-						"description": "Cierra la sesion activa e invalida el token"
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/logout",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "logout"]
+						}
 					}
 				},
 				{
 					"name": "Obtener perfil actual",
 					"request": {
 						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/api/auth/me",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "auth", "me"]
-						},
 						"header": [
 							{
 								"key": "Authorization",
 								"value": "Bearer {{token}}"
 							}
 						],
-						"description": "Obtiene la informacion del usuario autenticado"
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/me",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "me"]
+						}
 					}
 				}
 			]
 		},
 		{
 			"name": "Inventario",
-			"description": "CRUD completo del modulo de inventario",
+			"description": "CRUD completo del modulo de inventario (Fase 4)",
 			"item": [
 				{
 					"name": "Listar inventario",
 					"request": {
 						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/api/inventario?categoria=&busqueda=",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "inventario"],
-							"query": [
-								{ "key": "categoria", "value": "", "description": "Filtrar por categoria" },
-								{ "key": "busqueda", "value": "", "description": "Buscar por nombre o codigo" }
-							]
-						},
 						"header": [
 							{
 								"key": "Authorization",
 								"value": "Bearer {{token}}"
 							}
 						],
-						"description": "Lista todos los productos del inventario con filtros opcionales"
+						"url": {
+							"raw": "{{baseUrl}}/api/inventario",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "inventario"],
+							"query": [
+								{ "key": "categoria", "value": "" },
+								{ "key": "busqueda", "value": "" }
+							]
+						}
 					}
 				},
 				{
 					"name": "Obtener producto",
 					"request": {
 						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/api/inventario/1",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "inventario", "1"]
-						},
 						"header": [
 							{
 								"key": "Authorization",
 								"value": "Bearer {{token}}"
 							}
 						],
-						"description": "Obtiene un producto por su ID"
+						"url": {
+							"raw": "{{baseUrl}}/api/inventario/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "inventario", "1"]
+						}
 					}
 				},
 				{
 					"name": "Crear producto",
 					"request": {
 						"method": "POST",
-						"url": {
-							"raw": "{{baseUrl}}/api/inventario",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "inventario"]
-						},
 						"header": [
 							{
 								"key": "Content-Type",
@@ -137,18 +127,17 @@
 							"mode": "raw",
 							"raw": "{\n  \"codigo\": \"MP-005\",\n  \"nombre\": \"Tela Seda\",\n  \"categoria\": \"Materia Prima\",\n  \"cantidad\": 200,\n  \"costoUnitario\": 25.00,\n  \"stockMinimo\": 50\n}"
 						},
-						"description": "Crea un nuevo producto en el inventario"
+						"url": {
+							"raw": "{{baseUrl}}/api/inventario",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "inventario"]
+						}
 					}
 				},
 				{
 					"name": "Actualizar producto",
 					"request": {
 						"method": "PUT",
-						"url": {
-							"raw": "{{baseUrl}}/api/inventario/1",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "inventario", "1"]
-						},
 						"header": [
 							{
 								"key": "Content-Type",
@@ -163,114 +152,57 @@
 							"mode": "raw",
 							"raw": "{\n  \"codigo\": \"MP-001\",\n  \"nombre\": \"Tela Algodon Premium\",\n  \"categoria\": \"Materia Prima\",\n  \"cantidad\": 450,\n  \"costoUnitario\": 15.00,\n  \"stockMinimo\": 100\n}"
 						},
-						"description": "Actualiza un producto existente por su ID"
+						"url": {
+							"raw": "{{baseUrl}}/api/inventario/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "inventario", "1"]
+						}
 					}
 				},
 				{
 					"name": "Eliminar producto",
 					"request": {
 						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
 						"url": {
 							"raw": "{{baseUrl}}/api/inventario/1",
 							"host": ["{{baseUrl}}"],
 							"path": ["api", "inventario", "1"]
-						},
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"description": "Elimina un producto del inventario"
-					}
-				},
-				{
-					"name": "Estadisticas de inventario",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/api/inventario/stats",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "inventario", "stats"]
-						},
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"description": "Obtiene estadisticas del inventario (total items, valor total, stock bajo)"
-					}
-				},
-				{
-					"name": "Listar categorias",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/api/inventario/categorias",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "inventario", "categorias"]
-						},
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"description": "Lista las categorias distintas del inventario"
+						}
 					}
 				}
 			]
 		},
 		{
 			"name": "Costos",
-			"description": "Endpoints para gestion de costos predeterminados",
+			"description": "Endpoints para gestion de costos predeterminados (Fase 5)",
 			"item": [
 				{
 					"name": "Listar costos",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
 						"url": {
 							"raw": "{{baseUrl}}/api/costos",
 							"host": ["{{baseUrl}}"],
 							"path": ["api", "costos"]
-						},
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"description": "Lista todos los registros de costos guardados"
-					}
-				},
-				{
-					"name": "Obtener costo",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/api/costos/1",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "costos", "1"]
-						},
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"description": "Obtiene un registro de costo por su ID"
+						}
 					}
 				},
 				{
 					"name": "Guardar costo",
 					"request": {
 						"method": "POST",
-						"url": {
-							"raw": "{{baseUrl}}/api/costos",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "costos"]
-						},
 						"header": [
 							{
 								"key": "Content-Type",
@@ -285,78 +217,40 @@
 							"mode": "raw",
 							"raw": "{\n  \"producto\": \"Camisa Deportiva\",\n  \"codigo\": \"CAM-001\",\n  \"cantidad\": 500,\n  \"mpCantEst\": 10,\n  \"mpPrecioEst\": 5.00,\n  \"moCantEst\": 8,\n  \"moPrecioEst\": 12.50,\n  \"ciCantEst\": 5,\n  \"ciPrecioEst\": 8.00,\n  \"mpCantReal\": 12,\n  \"mpPrecioReal\": 6.00,\n  \"moCantReal\": 9,\n  \"moPrecioReal\": 13.00,\n  \"ciCantReal\": 6,\n  \"ciPrecioReal\": 9.50\n}"
 						},
-						"description": "Guarda un nuevo registro de costos (los totales se calculan en el servidor)"
-					}
-				},
-				{
-					"name": "Eliminar costo",
-					"request": {
-						"method": "DELETE",
 						"url": {
-							"raw": "{{baseUrl}}/api/costos/1",
+							"raw": "{{baseUrl}}/api/costos",
 							"host": ["{{baseUrl}}"],
-							"path": ["api", "costos", "1"]
-						},
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"description": "Elimina un registro de costo"
+							"path": ["api", "costos"]
+						}
 					}
 				}
 			]
 		},
 		{
 			"name": "Proyecciones",
-			"description": "Endpoints para gestion de proyecciones de inventario",
+			"description": "Endpoints para gestion de proyecciones de inventario (Fase 6)",
 			"item": [
 				{
 					"name": "Listar proyecciones",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
 						"url": {
 							"raw": "{{baseUrl}}/api/proyecciones",
 							"host": ["{{baseUrl}}"],
 							"path": ["api", "proyecciones"]
-						},
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"description": "Lista todas las proyecciones guardadas"
-					}
-				},
-				{
-					"name": "Obtener proyeccion con detalle",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/api/proyecciones/1",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "proyecciones", "1"]
-						},
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"description": "Obtiene una proyeccion con todos sus items de detalle"
+						}
 					}
 				},
 				{
 					"name": "Guardar proyeccion",
 					"request": {
 						"method": "POST",
-						"url": {
-							"raw": "{{baseUrl}}/api/proyecciones",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "proyecciones"]
-						},
 						"header": [
 							{
 								"key": "Content-Type",
@@ -371,117 +265,56 @@
 							"mode": "raw",
 							"raw": "{\n  \"periodo\": \"Proximo trimestre\",\n  \"crecimiento\": 15,\n  \"items\": [\n    {\n      \"inventarioId\": 1,\n      \"codigo\": \"MP-001\",\n      \"nombre\": \"Tela Algodon\",\n      \"categoria\": \"Materia Prima\",\n      \"cantidadActual\": 500,\n      \"cantidadProyectada\": 575,\n      \"costoUnitario\": 12.50\n    },\n    {\n      \"inventarioId\": 2,\n      \"codigo\": \"MP-002\",\n      \"nombre\": \"Hilo Industrial\",\n      \"categoria\": \"Materia Prima\",\n      \"cantidadActual\": 1200,\n      \"cantidadProyectada\": 1380,\n      \"costoUnitario\": 3.75\n    }\n  ]\n}"
 						},
-						"description": "Guarda una nueva proyeccion con su detalle"
-					}
-				},
-				{
-					"name": "Eliminar proyeccion",
-					"request": {
-						"method": "DELETE",
 						"url": {
-							"raw": "{{baseUrl}}/api/proyecciones/1",
+							"raw": "{{baseUrl}}/api/proyecciones",
 							"host": ["{{baseUrl}}"],
-							"path": ["api", "proyecciones", "1"]
-						},
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"description": "Elimina una proyeccion (el detalle se elimina en cascada)"
+							"path": ["api", "proyecciones"]
+						}
 					}
 				}
 			]
 		},
 		{
 			"name": "Auditoria",
-			"description": "Endpoints para el modulo de auditoria",
+			"description": "Endpoints para el modulo de auditoria (Fase 7)",
 			"item": [
 				{
 					"name": "Listar auditoria",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/api/auditoria?modulo=Todos&usuarioId=&fechaDesde=&fechaHasta=&page=1&limit=50",
+							"raw": "{{baseUrl}}/api/auditoria?modulo=Todos&page=1&limit=50",
 							"host": ["{{baseUrl}}"],
 							"path": ["api", "auditoria"],
 							"query": [
 								{ "key": "modulo", "value": "Todos" },
-								{ "key": "usuarioId", "value": "" },
-								{ "key": "fechaDesde", "value": "" },
-								{ "key": "fechaHasta", "value": "" },
 								{ "key": "page", "value": "1" },
 								{ "key": "limit", "value": "50" }
 							]
-						},
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"description": "Lista los registros de auditoria con filtros opcionales"
-					}
-				},
-				{
-					"name": "Estadisticas de auditoria",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/api/auditoria/stats",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "auditoria", "stats"]
-						},
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"description": "Obtiene estadisticas de auditoria (total, por modulo, por accion)"
+						}
 					}
 				},
 				{
 					"name": "Limpiar historial (admin)",
 					"request": {
 						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
 						"url": {
 							"raw": "{{baseUrl}}/api/auditoria",
 							"host": ["{{baseUrl}}"],
 							"path": ["api", "auditoria"]
-						},
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"description": "Limpia todo el historial de auditoria (solo usuarios admin)"
-					}
-				}
-			]
-		},
-		{
-			"name": "Dashboard",
-			"description": "Endpoints para el dashboard principal",
-			"item": [
-				{
-					"name": "Estadisticas del dashboard",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/api/dashboard/stats",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "dashboard", "stats"]
-						},
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}"
-							}
-						],
-						"description": "Obtiene todas las estadisticas consolidadas para el dashboard principal"
+						}
 					}
 				}
 			]
