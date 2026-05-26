@@ -6,7 +6,7 @@
 const FinovaAPI = (function () {
     'use strict';
 
-    const BASE_URL = 'http://localhost:5190/api';
+    const BASE_URL = 'http://localhost:5000/api';
     const SESSION_KEY = 'finova_session';
     let sessionToken = null;
 
