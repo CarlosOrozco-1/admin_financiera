@@ -1,23 +1,37 @@
 /* ============================================================
-   AUDIT — Sistema de auditoría FINOVA
-   Registro de todas las acciones del sistema
+   AUDIT — Sistema de auditoria FINOVA
+   Registro de acciones via API REST
+   Compatible con localStorage como fallback
    ============================================================ */
 
 const FiNovaAudit = (function () {
     'use strict';
 
-    const COLLECTION = 'finova_audit_log';
+    var COLLECTION = 'finova_audit_log';
+    var useAPI = typeof FinovaAPI !== 'undefined';
 
     /**
-     * Registra una acción en el log de auditoría
-     * @param {string} modulo - Módulo donde ocurrió (Login, Costos, Inventario, Proyección, Auditoría, Sistema)
-     * @param {string} accion - Tipo de acción (Crear, Editar, Eliminar, Exportar, Importar, etc.)
-     * @param {string} detalle - Descripción detallada
+     * Registra una accion en el log de auditoria
+     * @param {string} modulo
+     * @param {string} accion
+     * @param {string} detalle
      */
-    function log(modulo, accion, detalle) {
+    async function log(modulo, accion, detalle) {
+        /*
+         * Con API el backend registra automaticamente la auditoria
+         * al momento de hacer las operaciones CRUD.
+         * Este metodo es solo para casos puntuales del frontend.
+         */
         try {
-            const records = JSON.parse(localStorage.getItem(COLLECTION) || '[]');
-            const username = typeof FiNovaAuth !== 'undefined' ? FiNovaAuth.getCurrentUsername() : 'sistema';
+            if (useAPI) {
+                /*
+                 * No se envia a la API directamente porque el backend
+                 * requiere autenticacion y los modulos ya registran
+                 * auditoria automaticamente. Solo logging local.
+                 */
+            }
+            var records = JSON.parse(localStorage.getItem(COLLECTION) || '[]');
+            var username = typeof FiNovaAuth !== 'undefined' ? FiNovaAuth.getCurrentUsername() : 'sistema';
 
             records.push({
                 id: Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
@@ -28,22 +42,26 @@ const FiNovaAudit = (function () {
                 detalle: detalle
             });
 
-            // Mantener máximo 500 registros
             if (records.length > 500) {
                 records.splice(0, records.length - 500);
             }
 
             localStorage.setItem(COLLECTION, JSON.stringify(records));
         } catch (e) {
-            console.error('Error al registrar auditoría:', e);
+            console.error('Error al registrar auditoria:', e);
         }
     }
 
     /**
-     * Obtiene todos los registros de auditoría
-     * @returns {Array}
+     * Obtiene todos los registros de auditoria desde la API
+     * @param {object} filters - {modulo, usuario, fechaDesde, fechaHasta}
+     * @returns {Promise<Array>}
      */
-    function getAll() {
+    async function getAll() {
+        if (useAPI) {
+            var res = await FinovaAPI.auditoria.getAll();
+            return res || [];
+        }
         try {
             return JSON.parse(localStorage.getItem(COLLECTION) || '[]');
         } catch (e) {
@@ -53,69 +71,113 @@ const FiNovaAudit = (function () {
 
     /**
      * Obtiene registros filtrados
-     * @param {object} filters - {modulo, usuario, fechaDesde, fechaHasta}
-     * @returns {Array}
+     * @param {object} filters
+     * @returns {Promise<Array>}
      */
-    function getFiltered(filters) {
-        let records = getAll();
+    async function getFiltered(filters) {
+        if (useAPI) {
+            /*
+             * Con API los filtros se pasan como query params.
+             */
+            var params = {};
+            if (filters.modulo && filters.modulo !== 'Todos') params.modulo = filters.modulo;
+            var res = await FinovaAPI.auditoria.getAll(params.modulo);
+            var data = res || [];
 
+            /*
+             * Filtros de fecha se aplican localmente porque la API
+             * soporta filtros basicos. Si se necesita, se puede
+             * expandir para pasar fechas como query params.
+             */
+            if (filters.fechaDesde) {
+                var desde = new Date(filters.fechaDesde).getTime();
+                data = data.filter(function (r) { return new Date(r.fecha).getTime() >= desde; });
+            }
+            if (filters.fechaHasta) {
+                var hasta = new Date(filters.fechaHasta);
+                hasta.setDate(hasta.getDate() + 1);
+                var hastaTime = hasta.getTime();
+                data = data.filter(function (r) { return new Date(r.fecha).getTime() <= hastaTime; });
+            }
+
+            return data;
+        }
+
+        var records = JSON.parse(localStorage.getItem(COLLECTION) || '[]');
         if (filters.modulo && filters.modulo !== 'Todos') {
-            records = records.filter(r => r.modulo === filters.modulo);
+            records = records.filter(function (r) { return r.modulo === filters.modulo; });
         }
         if (filters.usuario && filters.usuario !== 'Todos') {
-            records = records.filter(r => r.usuario === filters.usuario);
+            records = records.filter(function (r) { return r.usuario === filters.usuario; });
         }
         if (filters.fechaDesde) {
-            records = records.filter(r => r.fecha >= filters.fechaDesde);
+            records = records.filter(function (r) { return r.fecha >= filters.fechaDesde; });
         }
         if (filters.fechaHasta) {
-            const hasta = new Date(filters.fechaHasta);
-            hasta.setDate(hasta.getDate() + 1);
-            records = records.filter(r => r.fecha <= hasta.toISOString());
+            var h = new Date(filters.fechaHasta);
+            h.setDate(h.getDate() + 1);
+            records = records.filter(function (r) { return r.fecha <= h.toISOString(); });
         }
-
         return records;
     }
 
     /**
-     * Obtiene los últimos N registros
+     * Obtiene los ultimos N registros
      * @param {number} n
-     * @returns {Array}
+     * @returns {Promise<Array>}
      */
-    function getRecent(n) {
-        const records = getAll();
-        return records.slice(-n).reverse();
+    async function getRecent(n) {
+        if (useAPI) {
+            var data = await getAll();
+            return data.slice(-n).reverse();
+        }
+        try {
+            var records = JSON.parse(localStorage.getItem(COLLECTION) || '[]');
+            return records.slice(-n).reverse();
+        } catch (e) {
+            return [];
+        }
     }
 
     /**
-     * Obtiene estadísticas de auditoría
-     * @returns {object}
+     * Obtiene estadisticas de auditoria desde la API
+     * @returns {Promise<object>}
      */
-    function getStats() {
-        const records = getAll();
-        const byModule = {};
-        const byAction = {};
-        const byUser = {};
-
-        records.forEach(r => {
-            byModule[r.modulo] = (byModule[r.modulo] || 0) + 1;
-            byAction[r.accion] = (byAction[r.accion] || 0) + 1;
-            byUser[r.usuario] = (byUser[r.usuario] || 0) + 1;
-        });
-
-        return {
-            total: records.length,
-            byModule,
-            byAction,
-            byUser
-        };
+    async function getStats() {
+        if (useAPI) {
+            var res = await FinovaAPI.auditoria.getStats();
+            return res || { total: 0, byModule: [], usuariosActivos: 0 };
+        }
+        try {
+            var records = JSON.parse(localStorage.getItem(COLLECTION) || '[]');
+            var byModule = {};
+            var byAction = {};
+            var byUser = {};
+            records.forEach(function (r) {
+                byModule[r.modulo] = (byModule[r.modulo] || 0) + 1;
+                byAction[r.accion] = (byAction[r.accion] || 0) + 1;
+                byUser[r.usuario] = (byUser[r.usuario] || 0) + 1;
+            });
+            return { total: records.length, byModule: byModule, byAction: byAction, byUser: byUser };
+        } catch (e) {
+            return { total: 0, byModule: {}, byAction: {}, byUser: {} };
+        }
     }
 
     /**
-     * Limpia todo el historial de auditoría
+     * Limpia todo el historial de auditoria via API
+     * @returns {Promise<boolean>}
      */
-    function clearAll() {
+    async function clearAll() {
+        if (useAPI) {
+            var ok = await FinovaAPI.auditoria.clearAll();
+            if (ok) {
+                localStorage.setItem(COLLECTION, JSON.stringify([]));
+            }
+            return ok;
+        }
         localStorage.setItem(COLLECTION, JSON.stringify([]));
+        return true;
     }
 
     /**
@@ -124,7 +186,7 @@ const FiNovaAudit = (function () {
      * @returns {string}
      */
     function formatDate(isoDate) {
-        const d = new Date(isoDate);
+        var d = new Date(isoDate);
         return d.toLocaleDateString('es-GT', {
             day: '2-digit',
             month: '2-digit',

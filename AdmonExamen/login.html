@@ -59,6 +59,7 @@
         </div>
     </div>
 
+    <script src="js/api.js"></script>
     <script src="js/database.js"></script>
     <script src="js/audit.js"></script>
     <script src="js/auth.js"></script>
@@ -68,7 +69,7 @@
         window.location.href = 'dashboard.html';
     }
 
-    function handleLogin(e) {
+    async function handleLogin(e) {
         e.preventDefault();
         const username = document.getElementById('loginUser').value.trim();
         const password = document.getElementById('loginPass').value;
@@ -80,12 +81,11 @@
         btn.disabled = true;
         btn.textContent = 'Verificando...';
 
-        // Simular un pequeño delay para UX
-        setTimeout(() => {
-            const result = FiNovaAuth.login(username, password);
+        try {
+            const result = await FiNovaAuth.login(username, password);
 
             if (result.success) {
-                btn.textContent = '✓ Bienvenido';
+                btn.textContent = '\u2713 Bienvenido';
                 btn.style.background = 'linear-gradient(135deg, #22a06b 0%, #34d399 100%)';
                 setTimeout(() => {
                     window.location.href = 'dashboard.html';
@@ -107,7 +107,12 @@
                     errorEl.classList.remove('show');
                 }, 4000);
             }
-        }, 600);
+        } catch (err) {
+            errorText.textContent = 'Error de conexión con el servidor';
+            errorEl.classList.add('show');
+            btn.disabled = false;
+            btn.textContent = 'Iniciar Sesión';
+        }
     }
 
     function togglePasswordVisibility() {

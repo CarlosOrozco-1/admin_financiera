@@ -1,6 +1,8 @@
 /* ============================================================
-   AUTH — Sistema de autenticación FINOVA
-   Login, logout, protección de páginas, gestión de sesión
+   AUTH — Sistema de autenticacion FINOVA
+   Login mediante API REST, sesion en sessionStorage
+   Compatible con la interfaz anterior: auth.js se carga
+   despues de api.js para usar FinovaAPI
    ============================================================ */
 
 const FiNovaAuth = (function () {
@@ -9,50 +11,7 @@ const FiNovaAuth = (function () {
     const SESSION_KEY = 'finova_session';
 
     /**
-     * Intenta autenticar un usuario
-     * @param {string} username
-     * @param {string} password
-     * @returns {{success: boolean, user: object|null, message: string}}
-     */
-    function login(username, password) {
-        const users = FiNovaDB.getAll(FiNovaDB.COLLECTIONS.USERS);
-        const user = users.find(u => u.username === username && u.password === password);
-
-        if (user) {
-            const session = {
-                userId: user.id,
-                username: user.username,
-                nombre: user.nombre,
-                role: user.role,
-                loginAt: new Date().toISOString()
-            };
-            sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
-
-            // Registrar en auditoría
-            if (typeof FiNovaAudit !== 'undefined') {
-                FiNovaAudit.log('Login', 'Inicio de sesión', `Usuario: ${user.username}`);
-            }
-
-            return { success: true, user: session, message: 'Inicio de sesión exitoso' };
-        }
-
-        return { success: false, user: null, message: 'Usuario o contraseña incorrectos' };
-    }
-
-    /**
-     * Cierra la sesión actual
-     */
-    function logout() {
-        const session = getSession();
-        if (session && typeof FiNovaAudit !== 'undefined') {
-            FiNovaAudit.log('Login', 'Cierre de sesión', `Usuario: ${session.username}`);
-        }
-        sessionStorage.removeItem(SESSION_KEY);
-        window.location.href = 'login.html';
-    }
-
-    /**
-     * Obtiene la sesión activa
+     * Obtiene la sesion activa desde sessionStorage
      * @returns {object|null}
      */
     function getSession() {
@@ -65,7 +24,7 @@ const FiNovaAuth = (function () {
     }
 
     /**
-     * Verifica si hay una sesión activa
+     * Verifica si hay sesion activa
      * @returns {boolean}
      */
     function isAuthenticated() {
@@ -77,13 +36,13 @@ const FiNovaAuth = (function () {
      * @returns {boolean}
      */
     function isAdmin() {
-        const session = getSession();
-        return session && session.role === 'admin';
+        var s = getSession();
+        return s && s.role === 'admin';
     }
 
     /**
-     * Protege una página — redirige al login si no hay sesión
-     * Llamar al inicio de cada página protegida
+     * Redirige al login si no hay sesion
+     * @returns {boolean}
      */
     function requireAuth() {
         if (!isAuthenticated()) {
@@ -98,8 +57,8 @@ const FiNovaAuth = (function () {
      * @returns {string}
      */
     function getCurrentUserName() {
-        const session = getSession();
-        return session ? session.nombre : 'Invitado';
+        var s = getSession();
+        return s ? s.nombre : 'Invitado';
     }
 
     /**
@@ -107,8 +66,68 @@ const FiNovaAuth = (function () {
      * @returns {string}
      */
     function getCurrentUsername() {
-        const session = getSession();
-        return session ? session.username : '';
+        var s = getSession();
+        return s ? s.username : '';
+    }
+
+    /**
+     * Inicia sesion contra la API REST
+     * @param {string} username
+     * @param {string} password
+     * @returns {Promise<{success: boolean, user: object|null, message: string}>}
+     */
+    async function login(username, password) {
+        /*
+         * Se usa FinovaAPI.login() que llama a POST /api/auth/login.
+         * Si la API no esta disponible (FinovaAPI no definido),
+         * fallback a localStorage para desarrollo local.
+         */
+        if (typeof FinovaAPI !== 'undefined') {
+            var result = await FinovaAPI.login(username, password);
+            if (result.success && typeof FiNovaAudit !== 'undefined') {
+                FiNovaAudit.log('Login', 'Inicio de sesion', 'Usuario: ' + username);
+            }
+            return result;
+        }
+
+        // Fallback: login local con localStorage
+        var users = FiNovaDB.getAll(FiNovaDB.COLLECTIONS.USERS);
+        var user = users.find(function (u) { return u.username === username && u.password === password; });
+
+        if (user) {
+            var session = {
+                userId: user.id,
+                username: user.username,
+                nombre: user.nombre,
+                role: user.role,
+                loginAt: new Date().toISOString()
+            };
+            sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
+            if (typeof FiNovaAudit !== 'undefined') {
+                FiNovaAudit.log('Login', 'Inicio de sesion', 'Usuario: ' + user.username);
+            }
+            return { success: true, user: session, message: 'Inicio de sesion exitoso' };
+        }
+
+        return { success: false, user: null, message: 'Usuario o contrasena incorrectos' };
+    }
+
+    /**
+     * Cierra la sesion actual
+     */
+    async function logout() {
+        var session = getSession();
+        if (session) {
+            if (typeof FiNovaAudit !== 'undefined') {
+                FiNovaAudit.log('Login', 'Cierre de sesion', 'Usuario: ' + session.username);
+            }
+            if (typeof FinovaAPI !== 'undefined') {
+                await FinovaAPI.logout();
+                return;
+            }
+        }
+        sessionStorage.removeItem(SESSION_KEY);
+        window.location.href = 'login.html';
     }
 
     return {

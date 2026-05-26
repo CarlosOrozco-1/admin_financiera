@@ -14,6 +14,7 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="js/api.js"></script>
     <script src="js/database.js"></script>
     <script src="js/audit.js"></script>
     <script src="js/auth.js"></script>
@@ -132,8 +133,8 @@
     function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidebarOverlay').classList.toggle('active'); }
     function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebarOverlay').classList.remove('active'); }
 
-    function renderInventory() {
-        const items = FiNovaInventory.getFiltered();
+    async function renderInventory() {
+        const items = await FiNovaInventory.getFiltered();
         const body = document.getElementById('invBody');
 
         if (items.length === 0) {
@@ -141,48 +142,36 @@
             return;
         }
 
-        body.innerHTML = items.map(item => {
+        body.innerHTML = items.map(function(item) {
             const valor = (item.cantidad || 0) * (item.costoUnitario || 0);
             const status = FiNovaInventory.getStockStatus(item);
             const label = FiNovaInventory.getStockLabel(status);
-            return `<tr>
-                <td style="font-weight:600; color: var(--accent);">${item.codigo || '—'}</td>
-                <td style="font-weight:550;">${item.nombre || '—'}</td>
-                <td><span style="font-size:0.78rem; color:var(--text-secondary);">${item.categoria || '—'}</span></td>
-                <td style="font-weight:600;">${(item.cantidad || 0).toLocaleString('es-GT')}</td>
-                <td>Q ${(item.costoUnitario || 0).toFixed(2)}</td>
-                <td style="font-weight:600;">Q ${valor.toLocaleString('es-GT', {minimumFractionDigits:2})}</td>
-                <td><span class="stock-badge ${status}">${label}</span></td>
-                <td><div class="table-actions">
-                    <button class="table-action-btn" onclick="editProduct('${item.id}')" title="Editar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-                    <button class="table-action-btn delete" onclick="deleteProduct('${item.id}')" title="Eliminar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
-                </div></td>
-            </tr>`;
+            return '<tr><td style="font-weight:600; color: var(--accent);">' + (item.codigo || '\u2014') + '</td><td style="font-weight:550;">' + (item.nombre || '\u2014') + '</td><td><span style="font-size:0.78rem; color:var(--text-secondary);">' + (item.categoria || '\u2014') + '</span></td><td style="font-weight:600;">' + (item.cantidad || 0).toLocaleString('es-GT') + '</td><td>Q ' + (item.costoUnitario || 0).toFixed(2) + '</td><td style="font-weight:600;">Q ' + valor.toLocaleString('es-GT', {minimumFractionDigits:2}) + '</td><td><span class="stock-badge ' + status + '">' + label + '</span></td><td><div class="table-actions"><button class="table-action-btn" onclick="editProduct(' + item.id + ')" title="Editar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="table-action-btn delete" onclick="deleteProduct(' + item.id + ')" title="Eliminar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div></td></tr>';
         }).join('');
     }
 
-    function updateStats() {
-        const stats = FiNovaInventory.getStats();
+    async function updateStats() {
+        const stats = await FiNovaInventory.getStats();
         document.getElementById('statTotal').textContent = stats.totalItems;
         document.getElementById('statValor').textContent = 'Q ' + stats.totalValue.toLocaleString('es-GT', {minimumFractionDigits:2});
         document.getElementById('statUnidades').textContent = stats.totalUnits.toLocaleString('es-GT');
         document.getElementById('statLowStock').textContent = stats.lowStock;
     }
 
-    function updateCategories() {
-        const cats = FiNovaInventory.getCategories();
+    async function updateCategories() {
+        const cats = await FiNovaInventory.getCategories();
         const select = document.getElementById('categoryFilter');
         const current = select.value;
-        select.innerHTML = '<option value="Todas">Todas las categorías</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
+        select.innerHTML = '<option value="Todas">Todas las categor\u00edas</option>' + cats.map(function(c) { return '<option value="' + c + '">' + c + '</option>'; }).join('');
         select.value = current;
         const datalist = document.getElementById('catList');
-        if (datalist) datalist.innerHTML = cats.map(c => `<option value="${c}">`).join('');
+        if (datalist) datalist.innerHTML = cats.map(function(c) { return '<option value="' + c + '">'; }).join('');
     }
 
-    function filterInventory() {
+    async function filterInventory() {
         FiNovaInventory.setSearch(document.getElementById('searchInput').value);
         FiNovaInventory.setCategory(document.getElementById('categoryFilter').value);
-        renderInventory();
+        await renderInventory();
     }
 
     function openModal(id) {
@@ -199,8 +188,13 @@
 
     function closeModal() { document.getElementById('productModal').classList.remove('active'); }
 
-    function editProduct(id) {
-        const item = FiNovaDB.getById(FiNovaDB.COLLECTIONS.INVENTARIO, id);
+    async function editProduct(id) {
+        var item = null;
+        if (typeof FinovaAPI !== 'undefined') {
+            item = await FinovaAPI.inventario.getById(id);
+        } else {
+            item = FiNovaDB.getById(FiNovaDB.COLLECTIONS.INVENTARIO, id);
+        }
         if (!item) return;
         document.getElementById('editId').value = id;
         document.getElementById('modalTitle').textContent = 'Editar Producto';
@@ -213,7 +207,7 @@
         document.getElementById('productModal').classList.add('active');
     }
 
-    function saveProduct(e) {
+    async function saveProduct(e) {
         e.preventDefault();
         const data = {
             codigo: document.getElementById('fCodigo').value.trim(),
@@ -225,60 +219,61 @@
         };
         const editId = document.getElementById('editId').value;
         if (editId) {
-            FiNovaInventory.updateItem(editId, data);
+            await FiNovaInventory.updateItem(editId, data);
             showToast('Producto actualizado');
         } else {
-            FiNovaInventory.add(data);
+            await FiNovaInventory.add(data);
             showToast('Producto agregado');
         }
         closeModal();
-        refresh();
+        await refresh();
     }
 
-    function deleteProduct(id) {
-        if (confirm('¿Está seguro de eliminar este producto?')) {
-            FiNovaInventory.remove(id);
+    async function deleteProduct(id) {
+        if (confirm('\u00bfEst\u00e1 seguro de eliminar este producto?')) {
+            await FiNovaInventory.remove(id);
             showToast('Producto eliminado');
-            refresh();
+            await refresh();
         }
     }
 
-    function importInventory(e) {
+    async function importInventory(e) {
         const file = e.target.files[0];
         if (!file) return;
-        FiNovaExcel.importAsObjects(file, function(err, data) {
+        FiNovaExcel.importAsObjects(file, async function(err, data) {
             if (err) { showToast('Error al leer archivo'); return; }
             const mapped = FiNovaExcel.mapToInventario(data);
-            const count = FiNovaInventory.importFromExcel(mapped);
-            showToast(`${count} productos importados`);
-            refresh();
+            const count = await FiNovaInventory.importFromExcel(mapped);
+            showToast(count + ' productos importados');
+            await refresh();
         });
         e.target.value = '';
     }
 
-    function exportExcel() {
-        const items = FiNovaInventory.getFiltered();
-        const data = [['Código', 'Producto', 'Categoría', 'Cantidad', 'Costo Unitario', 'Valor Total', 'Stock Mínimo']];
-        items.forEach(i => data.push([i.codigo, i.nombre, i.categoria, i.cantidad, i.costoUnitario, (i.cantidad||0)*(i.costoUnitario||0), i.stockMinimo]));
+    async function exportExcel() {
+        const items = await FiNovaInventory.getFiltered();
+        const data = [['C\u00f3digo', 'Producto', 'Categor\u00eda', 'Cantidad', 'Costo Unitario', 'Valor Total', 'Stock M\u00ednimo']];
+        items.forEach(function(i) { data.push([i.codigo, i.nombre, i.categoria, i.cantidad, i.costoUnitario, (i.cantidad||0)*(i.costoUnitario||0), i.stockMinimo]); });
         FiNovaExcel.exportToExcel(data, 'FINOVA_Inventario', 'Inventario');
-        FiNovaAudit.log('Inventario', 'Exportar Excel', `${items.length} productos`);
+        FiNovaAudit.log('Inventario', 'Exportar Excel', items.length + ' productos');
         showToast('Inventario exportado a Excel');
     }
 
-    function exportPDF() {
-        FiNovaPDF.exportInventario(FiNovaInventory.getFiltered());
-        FiNovaAudit.log('Inventario', 'Exportar PDF', `${FiNovaInventory.getFiltered().length} productos`);
+    async function exportPDF() {
+        const items = await FiNovaInventory.getFiltered();
+        FiNovaPDF.exportInventario(items);
+        FiNovaAudit.log('Inventario', 'Exportar PDF', items.length + ' productos');
         showToast('PDF generado');
     }
 
-    function refresh() { renderInventory(); updateStats(); updateCategories(); }
+    async function refresh() { await renderInventory(); await updateStats(); await updateCategories(); }
 
-    function showToast(msg) { const t = document.getElementById('toast'); document.getElementById('toastText').textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
+    function showToast(msg) { const t = document.getElementById('toast'); document.getElementById('toastText').textContent = msg; t.classList.add('show'); setTimeout(function() { t.classList.remove('show'); }, 3000); }
 
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', async function() {
         const s = FiNovaAuth.getSession();
         if (s) { document.getElementById('sidebarUserName').textContent = s.nombre; document.getElementById('sidebarUserRole').textContent = s.role; document.getElementById('sidebarAvatar').textContent = s.nombre.charAt(0).toUpperCase(); }
-        refresh();
+        await refresh();
     });
     </script>
 </body>

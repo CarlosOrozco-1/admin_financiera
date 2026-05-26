@@ -1,22 +1,26 @@
 /* ============================================================
-   INVENTORY PROJECTION — Proyección de inventario FINOVA
+   INVENTORY PROJECTION — Proyeccion de inventario FINOVA
+   Consume la API REST a traves de FinovaAPI
+   Compatible con localStorage como fallback
    ============================================================ */
 
 const FiNovaProjection = (function () {
     'use strict';
 
+    var useAPI = typeof FinovaAPI !== 'undefined';
+
     /**
-     * Genera datos de proyección
+     * Genera datos de proyeccion
      * @param {Array} items - Inventario actual
      * @param {number} growthPct - % de crecimiento proyectado
      * @returns {Array}
      */
     function generate(items, growthPct) {
-        return items.map(item => {
-            const actual = item.cantidad || 0;
-            const proyectado = Math.round(actual * (1 + growthPct / 100));
-            const diferencia = proyectado - actual;
-            const pctCambio = actual > 0 ? ((diferencia / actual) * 100).toFixed(1) : '—';
+        return items.map(function (item) {
+            var actual = item.cantidad || 0;
+            var proyectado = Math.round(actual * (1 + growthPct / 100));
+            var diferencia = proyectado - actual;
+            var pctCambio = actual > 0 ? ((diferencia / actual) * 100).toFixed(1) : '2014';
 
             return {
                 id: item.id,
@@ -35,19 +39,19 @@ const FiNovaProjection = (function () {
     }
 
     /**
-     * Genera proyección personalizada (cantidades editadas manualmente)
+     * Genera proyeccion personalizada (cantidades editadas manualmente)
      * @param {Array} items - Inventario actual
      * @param {Object} customQuantities - {itemId: cantidadProyectada}
      * @returns {Array}
      */
     function generateCustom(items, customQuantities) {
-        return items.map(item => {
-            const actual = item.cantidad || 0;
-            const proyectado = customQuantities[item.id] !== undefined
+        return items.map(function (item) {
+            var actual = item.cantidad || 0;
+            var proyectado = customQuantities[item.id] !== undefined
                 ? parseInt(customQuantities[item.id]) || 0
                 : actual;
-            const diferencia = proyectado - actual;
-            const pctCambio = actual > 0 ? ((diferencia / actual) * 100).toFixed(1) : '0.0';
+            var diferencia = proyectado - actual;
+            var pctCambio = actual > 0 ? ((diferencia / actual) * 100).toFixed(1) : '0.0';
 
             return {
                 id: item.id,
@@ -66,7 +70,7 @@ const FiNovaProjection = (function () {
     }
 
     /**
-     * Genera análisis de texto de la proyección
+     * Genera analisis de texto de la proyeccion
      * @param {Array} projectionData
      * @returns {string}
      */
@@ -75,53 +79,89 @@ const FiNovaProjection = (function () {
             return 'No hay datos para analizar.';
         }
 
-        const totalActual = projectionData.reduce((s, i) => s + i.cantidadActual, 0);
-        const totalProyectado = projectionData.reduce((s, i) => s + i.cantidadProyectada, 0);
-        const valorActual = projectionData.reduce((s, i) => s + i.valorActual, 0);
-        const valorProyectado = projectionData.reduce((s, i) => s + i.valorProyectado, 0);
+        var totalActual = projectionData.reduce(function (s, i) { return s + i.cantidadActual; }, 0);
+        var totalProyectado = projectionData.reduce(function (s, i) { return s + i.cantidadProyectada; }, 0);
+        var valorActual = projectionData.reduce(function (s, i) { return s + i.valorActual; }, 0);
+        var valorProyectado = projectionData.reduce(function (s, i) { return s + i.valorProyectado; }, 0);
 
-        const diffUnits = totalProyectado - totalActual;
-        const diffValor = valorProyectado - valorActual;
-        const pctUnits = totalActual > 0 ? ((diffUnits / totalActual) * 100).toFixed(1) : 0;
+        var diffUnits = totalProyectado - totalActual;
+        var diffValor = valorProyectado - valorActual;
+        var pctUnits = totalActual > 0 ? ((diffUnits / totalActual) * 100).toFixed(1) : 0;
 
-        const mayores = [...projectionData].sort((a, b) => Math.abs(b.diferencia) - Math.abs(a.diferencia));
-        const top = mayores.slice(0, 3);
+        var mayores = [].concat(projectionData).sort(function (a, b) { return Math.abs(b.diferencia) - Math.abs(a.diferencia); });
+        var top = mayores.slice(0, 3);
 
-        let analysis = `<p>La proyección contempla un inventario de <strong>${totalProyectado.toLocaleString('es-GT')} unidades</strong> `;
-        analysis += `frente a las <strong>${totalActual.toLocaleString('es-GT')} unidades</strong> actuales, `;
-        analysis += `representando un cambio del <strong>${pctUnits}%</strong>.</p>`;
+        var analysis = '<p>La proyeccion contempla un inventario de <strong>' + totalProyectado.toLocaleString('es-GT') + ' unidades</strong> ';
+        analysis += 'frente a las <strong>' + totalActual.toLocaleString('es-GT') + ' unidades</strong> actuales, ';
+        analysis += 'representando un cambio del <strong>' + pctUnits + '%</strong>.</p>';
 
-        analysis += `<p>El valor proyectado del inventario es de <strong>Q ${valorProyectado.toLocaleString('es-GT', { minimumFractionDigits: 2 })}</strong> `;
-        analysis += `comparado con el valor actual de <strong>Q ${valorActual.toLocaleString('es-GT', { minimumFractionDigits: 2 })}</strong>`;
+        analysis += '<p>El valor proyectado del inventario es de <strong>Q ' + valorProyectado.toLocaleString('es-GT', { minimumFractionDigits: 2 }) + '</strong> ';
+        analysis += 'comparado con el valor actual de <strong>Q ' + valorActual.toLocaleString('es-GT', { minimumFractionDigits: 2 }) + '</strong>';
 
         if (diffValor > 0) {
-            analysis += `, lo cual implica una inversión adicional de <strong style="color:var(--accent)">Q ${diffValor.toLocaleString('es-GT', { minimumFractionDigits: 2 })}</strong>.`;
+            analysis += ', lo cual implica una inversion adicional de <strong style="color:var(--accent)">Q ' + diffValor.toLocaleString('es-GT', { minimumFractionDigits: 2 }) + '</strong>.';
         } else if (diffValor < 0) {
-            analysis += `, lo cual representa una reducción de <strong style="color:var(--green)">Q ${Math.abs(diffValor).toLocaleString('es-GT', { minimumFractionDigits: 2 })}</strong>.`;
+            analysis += ', lo cual representa una reduccion de <strong style="color:var(--green)">Q ' + Math.abs(diffValor).toLocaleString('es-GT', { minimumFractionDigits: 2 }) + '</strong>.';
         } else {
-            analysis += `.`;
+            analysis += '.';
         }
-        analysis += `</p>`;
+        analysis += '</p>';
 
         if (top.length > 0 && top[0].diferencia !== 0) {
-            analysis += `<p>Los productos con mayor variación proyectada son: `;
-            analysis += top.map(t => `<strong>${t.nombre}</strong> (${t.diferencia > 0 ? '+' : ''}${t.diferencia} unidades)`).join(', ');
+            analysis += '<p>Los productos con mayor variacion proyectada son: ';
+            analysis += top.map(function (t) { return '<strong>' + t.nombre + '</strong> (' + (t.diferencia > 0 ? '+' : '') + t.diferencia + ' unidades)'; }).join(', ');
             analysis += '.</p>';
         }
 
         return analysis;
     }
 
-    function saveProjection(data, growthPct) {
-        const record = {
+    /**
+     * Guarda una proyeccion via API
+     * @param {Array} projectionData - Datos de proyeccion generados
+     * @param {number} growthPct - % de crecimiento
+     * @returns {Promise<object>}
+     */
+    async function saveProjection(projectionData, growthPct) {
+        if (useAPI) {
+            /*
+             * La API espera: { periodo, crecimiento, items: [...] }
+             * donde items tiene: inventarioId, codigo, nombre, categoria,
+             * cantidadActual, cantidadProyectada, costoUnitario
+             */
+            var payload = {
+                periodo: new Date().toLocaleDateString('es-GT'),
+                crecimiento: growthPct,
+                items: projectionData.map(function (i) {
+                    return {
+                        inventarioId: i.id,
+                        codigo: i.codigo,
+                        nombre: i.nombre,
+                        categoria: i.categoria,
+                        cantidadActual: i.cantidadActual,
+                        cantidadProyectada: i.cantidadProyectada,
+                        costoUnitario: i.costoUnitario
+                    };
+                })
+            };
+            var result = await FinovaAPI.proyecciones.create(payload);
+            if (result.ok && typeof FiNovaAudit !== 'undefined') {
+                FiNovaAudit.log('Proyeccion', 'Guardar', 'Proyeccion con ' + growthPct + '% de crecimiento, ' + projectionData.length + ' productos');
+            }
+            return result.ok ? result.data : null;
+        }
+
+        var record = {
             fecha: new Date().toISOString(),
             crecimiento: growthPct,
-            items: data,
-            totalActual: data.reduce((s, i) => s + i.cantidadActual, 0),
-            totalProyectado: data.reduce((s, i) => s + i.cantidadProyectada, 0)
+            items: projectionData,
+            totalActual: projectionData.reduce(function (s, i) { return s + i.cantidadActual; }, 0),
+            totalProyectado: projectionData.reduce(function (s, i) { return s + i.cantidadProyectada; }, 0)
         };
         FiNovaDB.save(FiNovaDB.COLLECTIONS.PROYECCIONES, record);
-        FiNovaAudit.log('Proyección', 'Guardar', `Proyección con ${growthPct}% de crecimiento, ${data.length} productos`);
+        if (typeof FiNovaAudit !== 'undefined') {
+            FiNovaAudit.log('Proyeccion', 'Guardar', 'Proyeccion con ' + growthPct + '% de crecimiento, ' + projectionData.length + ' productos');
+        }
         return record;
     }
 

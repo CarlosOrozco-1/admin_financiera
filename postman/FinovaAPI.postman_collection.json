@@ -463,6 +463,24 @@
 					}
 				}
 			]
+		},
+		{
+			"name": "Health Check",
+			"description": "Endpoint de verificación de estado de la API",
+			"item": [
+				{
+					"name": "Verificar estado API",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/health",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "health"]
+						}
+					}
+				}
+			]
 		}
 	],
 	"variable": [

@@ -18,6 +18,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <!-- Core -->
+    <script src="js/api.js"></script>
     <script src="js/database.js"></script>
     <script src="js/audit.js"></script>
     <script src="js/auth.js"></script>
@@ -403,19 +404,43 @@
         event.target.value = '';
     }
 
-    function guardarRegistro() {
+    async function guardarRegistro() {
         const est = calcularCostosEstandar();
         const re = calcularCostosReales();
         const v = re.total - est.total;
-        FiNovaDB.save(FiNovaDB.COLLECTIONS.COSTOS, {
-            producto: document.getElementById('nombreProducto').value,
-            codigo: document.getElementById('codigoProducto').value,
-            cantidad: getVal('cantidadProducida'),
-            estandar: est, real: re, variacion: v,
-            resultado: v < 0 ? 'Favorable' : v > 0 ? 'Desfavorable' : 'Sin variación'
-        });
-        FiNovaAudit.log('Costos', 'Guardar en BD', `Producto: ${document.getElementById('nombreProducto').value}`);
-        showToast('Registro guardado en base de datos');
+        /*
+         * Guardar en la API REST si esta disponible, sino en localStorage.
+         */
+        if (typeof FinovaAPI !== 'undefined') {
+            const payload = {
+                codigo: document.getElementById('codigoProducto').value,
+                producto: document.getElementById('nombreProducto').value,
+                tipoCosto: 'Predeterminado',
+                mpCantEst: getVal('mpCantEst'), mpPrecioEst: getVal('mpPrecioEst'),
+                mpCantReal: getVal('mpCantReal'), mpPrecioReal: getVal('mpPrecioReal'),
+                moCantEst: getVal('moCantEst'), moPrecioEst: getVal('moPrecioEst'),
+                moCantReal: getVal('moCantReal'), moPrecioReal: getVal('moPrecioReal'),
+                ciCantEst: getVal('ciCantEst'), ciPrecioEst: getVal('ciPrecioEst'),
+                ciCantReal: getVal('ciCantReal'), ciPrecioReal: getVal('ciPrecioReal')
+            };
+            const result = await FinovaAPI.costos.create(payload);
+            if (result.ok) {
+                FiNovaAudit.log('Costos', 'Guardar en BD', 'Producto: ' + document.getElementById('nombreProducto').value);
+                showToast('Registro guardado en base de datos via API');
+            } else {
+                showToast('Error: ' + result.message);
+            }
+        } else {
+            FiNovaDB.save(FiNovaDB.COLLECTIONS.COSTOS, {
+                producto: document.getElementById('nombreProducto').value,
+                codigo: document.getElementById('codigoProducto').value,
+                cantidad: getVal('cantidadProducida'),
+                estandar: est, real: re, variacion: v,
+                resultado: v < 0 ? 'Favorable' : v > 0 ? 'Desfavorable' : 'Sin variaci\u00f3n'
+            });
+            FiNovaAudit.log('Costos', 'Guardar en BD', 'Producto: ' + document.getElementById('nombreProducto').value);
+            showToast('Registro guardado en base de datos');
+        }
     }
 
     // Init

@@ -15,6 +15,7 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="js/api.js"></script>
     <script src="js/database.js"></script>
     <script src="js/audit.js"></script>
     <script src="js/auth.js"></script>
@@ -138,8 +139,8 @@
         };
     }
 
-    function applyFilters() {
-        filteredRecords = FiNovaAudit.getFiltered(getFilters());
+    async function applyFilters() {
+        filteredRecords = await FiNovaAudit.getFiltered(getFilters());
         renderTable();
     }
 
@@ -168,8 +169,8 @@
         }).join('');
     }
 
-    function updateStats() {
-        const stats = FiNovaAudit.getStats();
+    async function updateStats() {
+        const stats = await FiNovaAudit.getStats();
         document.getElementById('auditTotal').textContent = stats.total;
         document.getElementById('auditUsers').textContent = Object.keys(stats.byUser).length;
         document.getElementById('auditModules').textContent = Object.keys(stats.byModule).length;
@@ -220,28 +221,28 @@
         showToast('PDF de auditoría generado');
     }
 
-    function clearAudit() {
+    async function clearAudit() {
         if (!FiNovaAuth.isAdmin()) { showToast('Solo administradores pueden limpiar el historial'); return; }
-        if (confirm('¿Está seguro de limpiar todo el historial de auditoría?')) {
-            FiNovaAudit.clearAll();
-            FiNovaAudit.log('Auditoría', 'Limpiar historial', 'Historial de auditoría eliminado');
-            refresh();
+        if (confirm('\u00bfEst\u00e1 seguro de limpiar todo el historial de auditor\u00eda?')) {
+            await FiNovaAudit.clearAll();
+            FiNovaAudit.log('Auditor\u00eda', 'Limpiar historial', 'Historial de auditor\u00eda eliminado');
+            await refresh();
             showToast('Historial limpiado');
         }
     }
 
-    function refresh() {
-        filteredRecords = FiNovaAudit.getAll();
+    async function refresh() {
+        filteredRecords = await FiNovaAudit.getAll();
         renderTable();
-        updateStats();
+        await updateStats();
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', async function() {
         const s = FiNovaAuth.getSession();
         if (s) { document.getElementById('sidebarUserName').textContent = s.nombre; document.getElementById('sidebarUserRole').textContent = s.role; document.getElementById('sidebarAvatar').textContent = s.nombre.charAt(0).toUpperCase(); }
         // Hide clear button for non-admin
         if (!FiNovaAuth.isAdmin()) { document.getElementById('btnClear').style.display = 'none'; }
-        refresh();
+        await refresh();
     });
     </script>
 </body>

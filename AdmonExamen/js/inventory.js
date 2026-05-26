@@ -1,74 +1,160 @@
 /* ============================================================
-   INVENTORY — Lógica del módulo de inventario FINOVA
+   INVENTORY — Logica del modulo de inventario FINOVA
+   Consume la API REST a traves de FinovaAPI
+   Compatible con localStorage como fallback
    ============================================================ */
 
 const FiNovaInventory = (function () {
     'use strict';
 
-    const COL = FiNovaDB.COLLECTIONS.INVENTARIO;
-    let currentSearch = '';
-    let currentCategory = 'Todas';
+    var currentSearch = '';
+    var currentCategory = 'Todas';
 
-    function getAll() {
-        return FiNovaDB.getAll(COL);
+    var useAPI = typeof FinovaAPI !== 'undefined';
+
+    /**
+     * Obtiene todos los productos (con filtros opcionales)
+     * @returns {Promise<Array>}
+     */
+    async function getAll() {
+        if (useAPI) {
+            return await FinovaAPI.inventario.getAll(currentCategory === 'Todas' ? null : currentCategory, currentSearch || null);
+        }
+        return FiNovaDB.getAll(FiNovaDB.COLLECTIONS.INVENTARIO);
     }
 
-    function getFiltered() {
-        let items = getAll();
+    /**
+     * Obtiene productos filtrados por categoria y busqueda
+     * @returns {Promise<Array>}
+     */
+    async function getFiltered() {
+        /*
+         * Con API el backend aplica los filtros directamente.
+         */
+        if (useAPI) {
+            return await getAll();
+        }
+        var items = FiNovaDB.getAll(FiNovaDB.COLLECTIONS.INVENTARIO);
         if (currentCategory && currentCategory !== 'Todas') {
-            items = items.filter(i => i.categoria === currentCategory);
+            items = items.filter(function (i) { return i.categoria === currentCategory; });
         }
         if (currentSearch) {
-            const q = currentSearch.toLowerCase();
-            items = items.filter(i =>
-                (i.nombre || '').toLowerCase().includes(q) ||
-                (i.codigo || '').toLowerCase().includes(q) ||
-                (i.categoria || '').toLowerCase().includes(q)
-            );
+            var q = currentSearch.toLowerCase();
+            items = items.filter(function (i) {
+                return (i.nombre || '').toLowerCase().includes(q) ||
+                       (i.codigo || '').toLowerCase().includes(q) ||
+                       (i.categoria || '').toLowerCase().includes(q);
+            });
         }
         return items;
     }
 
-    function add(item) {
-        const saved = FiNovaDB.save(COL, item);
-        FiNovaAudit.log('Inventario', 'Crear', `Producto: ${item.nombre} (${item.codigo})`);
+    /**
+     * Agrega un nuevo producto
+     * @param {object} item
+     * @returns {Promise<object>}
+     */
+    async function add(item) {
+        if (useAPI) {
+            var result = await FinovaAPI.inventario.create(item);
+            if (result.ok) {
+                if (typeof FiNovaAudit !== 'undefined') {
+                    FiNovaAudit.log('Inventario', 'Crear', 'Producto: ' + item.nombre + ' (' + item.codigo + ')');
+                }
+                return result.data;
+            }
+            return null;
+        }
+        var saved = FiNovaDB.save(FiNovaDB.COLLECTIONS.INVENTARIO, item);
+        if (typeof FiNovaAudit !== 'undefined') {
+            FiNovaAudit.log('Inventario', 'Crear', 'Producto: ' + item.nombre + ' (' + item.codigo + ')');
+        }
         return saved;
     }
 
-    function updateItem(id, data) {
-        const updated = FiNovaDB.update(COL, id, data);
-        if (updated) {
-            FiNovaAudit.log('Inventario', 'Editar', `Producto: ${data.nombre} (${data.codigo})`);
+    /**
+     * Actualiza un producto
+     * @param {number|string} id
+     * @param {object} data
+     * @returns {Promise<object|null>}
+     */
+    async function updateItem(id, data) {
+        if (useAPI) {
+            var result = await FinovaAPI.inventario.update(id, data);
+            if (result.ok) {
+                if (typeof FiNovaAudit !== 'undefined') {
+                    FiNovaAudit.log('Inventario', 'Editar', 'Producto: ' + data.nombre + ' (' + data.codigo + ')');
+                }
+                return result.data;
+            }
+            return null;
+        }
+        var updated = FiNovaDB.update(FiNovaDB.COLLECTIONS.INVENTARIO, id, data);
+        if (updated && typeof FiNovaAudit !== 'undefined') {
+            FiNovaAudit.log('Inventario', 'Editar', 'Producto: ' + data.nombre + ' (' + data.codigo + ')');
         }
         return updated;
     }
 
-    function remove(id) {
-        const item = FiNovaDB.getById(COL, id);
-        const result = FiNovaDB.remove(COL, id);
-        if (result && item) {
-            FiNovaAudit.log('Inventario', 'Eliminar', `Producto: ${item.nombre} (${item.codigo})`);
+    /**
+     * Elimina un producto
+     * @param {number|string} id
+     * @returns {Promise<boolean>}
+     */
+    async function remove(id) {
+        if (useAPI) {
+            /*
+             * Con API necesitamos el item antes de eliminar para la auditoria.
+             */
+            var item = await FinovaAPI.inventario.getById(id);
+            var deleted = await FinovaAPI.inventario.remove(id);
+            if (deleted && item && typeof FiNovaAudit !== 'undefined') {
+                FiNovaAudit.log('Inventario', 'Eliminar', 'Producto: ' + item.nombre + ' (' + item.codigo + ')');
+            }
+            return deleted;
+        }
+        var item = FiNovaDB.getById(FiNovaDB.COLLECTIONS.INVENTARIO, id);
+        var result = FiNovaDB.remove(FiNovaDB.COLLECTIONS.INVENTARIO, id);
+        if (result && item && typeof FiNovaAudit !== 'undefined') {
+            FiNovaAudit.log('Inventario', 'Eliminar', 'Producto: ' + item.nombre + ' (' + item.codigo + ')');
         }
         return result;
     }
 
-    function getCategories() {
-        const items = getAll();
-        const cats = [...new Set(items.map(i => i.categoria).filter(Boolean))];
+    /**
+     * Obtiene categorias unicas
+     * @returns {Promise<Array>}
+     */
+    async function getCategories() {
+        if (useAPI) {
+            return await FinovaAPI.inventario.getCategories();
+        }
+        var items = FiNovaDB.getAll(FiNovaDB.COLLECTIONS.INVENTARIO);
+        var cats = [];
+        items.forEach(function (i) {
+            if (i.categoria && cats.indexOf(i.categoria) === -1) cats.push(i.categoria);
+        });
         return cats.sort();
     }
 
-    function getStats() {
-        const items = getAll();
-        const totalItems = items.length;
-        const totalValue = items.reduce((s, i) => s + (i.cantidad || 0) * (i.costoUnitario || 0), 0);
-        const lowStock = items.filter(i => i.cantidad <= (i.stockMinimo || 10)).length;
-        const totalUnits = items.reduce((s, i) => s + (i.cantidad || 0), 0);
-        return { totalItems, totalValue, lowStock, totalUnits };
+    /**
+     * Obtiene estadisticas del inventario
+     * @returns {Promise<object>}
+     */
+    async function getStats() {
+        if (useAPI) {
+            return await FinovaAPI.inventario.getStats();
+        }
+        var items = FiNovaDB.getAll(FiNovaDB.COLLECTIONS.INVENTARIO);
+        var totalItems = items.length;
+        var totalValue = items.reduce(function (s, i) { return s + (i.cantidad || 0) * (i.costoUnitario || 0); }, 0);
+        var lowStock = items.filter(function (i) { return i.cantidad <= (i.stockMinimo || 10); }).length;
+        var totalUnits = items.reduce(function (s, i) { return s + (i.cantidad || 0); }, 0);
+        return { totalItems: totalItems, totalValue: totalValue, lowStock: lowStock, totalUnits: totalUnits };
     }
 
     function getStockStatus(item) {
-        const min = item.stockMinimo || 10;
+        var min = item.stockMinimo || 10;
         if (item.cantidad <= 0) return 'critical';
         if (item.cantidad <= min) return 'low';
         return 'ok';
@@ -83,16 +169,25 @@ const FiNovaInventory = (function () {
     function setSearch(q) { currentSearch = q; }
     function setCategory(c) { currentCategory = c; }
 
-    function importFromExcel(items) {
-        let count = 0;
-        items.forEach(item => {
-            if (item.nombre || item.codigo) {
-                FiNovaDB.save(COL, item);
+    /**
+     * Importa productos desde Excel
+     * @param {Array} items
+     * @returns {Promise<number>}
+     */
+    async function importFromExcel(items) {
+        var count = 0;
+        for (var i = 0; i < items.length; i++) {
+            if (items[i].nombre || items[i].codigo) {
+                if (useAPI) {
+                    await FinovaAPI.inventario.create(items[i]);
+                } else {
+                    FiNovaDB.save(FiNovaDB.COLLECTIONS.INVENTARIO, items[i]);
+                }
                 count++;
             }
-        });
-        if (count > 0) {
-            FiNovaAudit.log('Inventario', 'Importar Excel', `${count} productos importados`);
+        }
+        if (count > 0 && typeof FiNovaAudit !== 'undefined') {
+            FiNovaAudit.log('Inventario', 'Importar Excel', count + ' productos importados');
         }
         return count;
     }
