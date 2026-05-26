@@ -52,6 +52,7 @@ builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<AuditoriaService>();
 builder.Services.AddScoped<InventarioService>();
 builder.Services.AddScoped<CostoService>();
+builder.Services.AddScoped<ProyeccionService>();
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();

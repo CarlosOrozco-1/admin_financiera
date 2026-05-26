@@ -6,6 +6,7 @@ dist/
 # .NET
 bin/
 obj/
+publish_out/
 *.user
 *.suo
 .vs/
