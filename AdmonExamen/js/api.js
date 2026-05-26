@@ -6,7 +6,7 @@
 const FinovaAPI = (function () {
     'use strict';
 
-    const BASE_URL = 'http://localhost:5000/api';
+    const BASE_URL = 'http://localhost:5190/api';
     const SESSION_KEY = 'finova_session';
     let sessionToken = null;
 
@@ -108,11 +108,12 @@ const FinovaAPI = (function () {
             return { success: false, user: null, message: res.message };
         }
         setToken(res.data.token);
+        var userData = res.data.user || {};
         const session = {
-            userId: res.data.userId || 0,
-            username: res.data.username,
-            nombre: res.data.nombre || res.data.username,
-            role: res.data.role || 'user',
+            userId: userData.id || 0,
+            username: userData.username || '',
+            nombre: userData.nombre || userData.username || '',
+            role: userData.role || 'user',
             token: res.data.token,
             loginAt: new Date().toISOString()
         };
