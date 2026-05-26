@@ -50,6 +50,7 @@ builder.Services.AddCors(options =>
 // Registrar servicios
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<AuditoriaService>();
+builder.Services.AddScoped<InventarioService>();
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();

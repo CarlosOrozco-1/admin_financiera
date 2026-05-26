@@ -136,12 +136,13 @@ END
 GO
 
 -- Indice para busquedas por token en sesiones
-IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_Sesiones_Token')
-BEGIN
-    CREATE INDEX IX_Sesiones_Token ON Sesiones(Token);
-    PRINT '✅ IX_Sesiones_Token creado';
-END
-GO
+-- NOTA: Comentado porque no se puede crear un índice sobre columnas NVARCHAR(MAX)
+-- IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_Sesiones_Token')
+-- BEGIN
+--     CREATE INDEX IX_Sesiones_Token ON Sesiones(Token);
+--     PRINT '✅ IX_Sesiones_Token creado';
+-- END
+-- GO
 
 -- Indice para busquedas por usuario en sesiones
 IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_Sesiones_UsuarioId')
