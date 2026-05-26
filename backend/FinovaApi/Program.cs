@@ -54,6 +54,8 @@ builder.Services.AddScoped<InventarioService>();
 builder.Services.AddScoped<CostoService>();
 builder.Services.AddScoped<ProyeccionService>();
 builder.Services.AddScoped<DashboardService>();
+builder.Services.AddScoped<KardexService>();
+builder.Services.AddScoped<UsuarioService>();
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();

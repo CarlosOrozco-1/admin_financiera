@@ -18,6 +18,7 @@ public class FinovaDbContext : DbContext
     public DbSet<Proyeccion> Proyecciones { get; set; }
     public DbSet<ProyeccionDetalle> ProyeccionDetalles { get; set; }
     public DbSet<AuditoriaLog> AuditoriaLogs { get; set; }
+    public DbSet<Kardex> KardexMovimientos { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -51,5 +52,10 @@ public class FinovaDbContext : DbContext
             .WithMany(p => p.Detalles)
             .HasForeignKey(pd => pd.ProyeccionId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Configuracion de indices para Kardex
+        modelBuilder.Entity<Kardex>()
+            .HasIndex(k => k.InventarioId)
+            .HasDatabaseName("IX_Kardex_InventarioId");
     }
 }
