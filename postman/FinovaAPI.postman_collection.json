@@ -391,14 +391,34 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/api/auditoria?modulo=Todos&page=1&limit=50",
+							"raw": "{{baseUrl}}/api/auditoria?modulo=Todos&usuarioId=&fechaDesde=&fechaHasta=&page=1&limit=50",
 							"host": ["{{baseUrl}}"],
 							"path": ["api", "auditoria"],
 							"query": [
 								{ "key": "modulo", "value": "Todos" },
+								{ "key": "usuarioId", "value": "" },
+								{ "key": "fechaDesde", "value": "" },
+								{ "key": "fechaHasta", "value": "" },
 								{ "key": "page", "value": "1" },
 								{ "key": "limit", "value": "50" }
 							]
+						}
+					}
+				},
+				{
+					"name": "Estadisticas auditoria",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/auditoria/stats",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auditoria", "stats"]
 						}
 					}
 				},
@@ -416,6 +436,29 @@
 							"raw": "{{baseUrl}}/api/auditoria",
 							"host": ["{{baseUrl}}"],
 							"path": ["api", "auditoria"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Dashboard",
+			"description": "Endpoint con estadisticas consolidadas del sistema (Fase 8)",
+			"item": [
+				{
+					"name": "Estadisticas dashboard",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/dashboard/stats",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "dashboard", "stats"]
 						}
 					}
 				}
