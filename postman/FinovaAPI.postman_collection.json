@@ -175,6 +175,40 @@
 							"path": ["api", "inventario", "1"]
 						}
 					}
+				},
+				{
+					"name": "Estadisticas inventario",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/inventario/stats",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "inventario", "stats"]
+						}
+					}
+				},
+				{
+					"name": "Listar categorias",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/inventario/categorias",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "inventario", "categorias"]
+						}
+					}
 				}
 			]
 		},
@@ -200,6 +234,23 @@
 					}
 				},
 				{
+					"name": "Obtener costo",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/costos/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "costos", "1"]
+						}
+					}
+				},
+				{
 					"name": "Guardar costo",
 					"request": {
 						"method": "POST",
@@ -215,12 +266,29 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"producto\": \"Camisa Deportiva\",\n  \"codigo\": \"CAM-001\",\n  \"cantidad\": 500,\n  \"mpCantEst\": 10,\n  \"mpPrecioEst\": 5.00,\n  \"moCantEst\": 8,\n  \"moPrecioEst\": 12.50,\n  \"ciCantEst\": 5,\n  \"ciPrecioEst\": 8.00,\n  \"mpCantReal\": 12,\n  \"mpPrecioReal\": 6.00,\n  \"moCantReal\": 9,\n  \"moPrecioReal\": 13.00,\n  \"ciCantReal\": 6,\n  \"ciPrecioReal\": 9.50\n}"
+							"raw": "{\n  \"codigo\": \"PT-001\",\n  \"producto\": \"Camisa Deportiva\",\n  \"tipoCosto\": \"Predeterminado\",\n  \"mpCantEst\": 2.5,\n  \"mpPrecioEst\": 15.00,\n  \"mpCantReal\": 3.0,\n  \"mpPrecioReal\": 14.50,\n  \"moCantEst\": 1.5,\n  \"moPrecioEst\": 20.00,\n  \"moCantReal\": 1.5,\n  \"moPrecioReal\": 22.00,\n  \"ciCantEst\": 1.0,\n  \"ciPrecioEst\": 5.00,\n  \"ciCantReal\": 1.0,\n  \"ciPrecioReal\": 4.80\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/costos",
 							"host": ["{{baseUrl}}"],
 							"path": ["api", "costos"]
+						}
+					}
+				},
+				{
+					"name": "Eliminar costo",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/costos/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "costos", "1"]
 						}
 					}
 				}
@@ -248,6 +316,23 @@
 					}
 				},
 				{
+					"name": "Obtener proyeccion",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/proyecciones/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "proyecciones", "1"]
+						}
+					}
+				},
+				{
 					"name": "Guardar proyeccion",
 					"request": {
 						"method": "POST",
@@ -269,6 +354,23 @@
 							"raw": "{{baseUrl}}/api/proyecciones",
 							"host": ["{{baseUrl}}"],
 							"path": ["api", "proyecciones"]
+						}
+					}
+				},
+				{
+					"name": "Eliminar proyeccion",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/proyecciones/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "proyecciones", "1"]
 						}
 					}
 				}
