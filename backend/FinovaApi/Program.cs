@@ -51,6 +51,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<AuditoriaService>();
 builder.Services.AddScoped<InventarioService>();
+builder.Services.AddScoped<CostoService>();
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
