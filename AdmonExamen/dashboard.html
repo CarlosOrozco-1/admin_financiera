@@ -252,21 +252,37 @@
 
         // Stats desde API o localStorage
         if (typeof FinovaAPI !== 'undefined') {
-            const dashStats = await FinovaAPI.dashboard.getStats();
-            document.getElementById('statInventario').textContent = dashStats.totalProductos || 0;
-            document.getElementById('statCostos').textContent = dashStats.totalCostos || 0;
-            document.getElementById('statAuditoria').textContent = dashStats.totalAuditoria || 0;
+            try {
+                const dashStats = await FinovaAPI.dashboard.getStats();
+                if (dashStats && dashStats.totalProductos !== undefined) {
+                    document.getElementById('statInventario').textContent = dashStats.totalProductos || 0;
+                    document.getElementById('statCostos').textContent = dashStats.totalCostos || 0;
+                    document.getElementById('statAuditoria').textContent = dashStats.totalAuditoria || 0;
 
-            // Actividad reciente
-            const actList = document.getElementById('activityList');
-            if (dashStats.actividadReciente && dashStats.actividadReciente.length > 0) {
-                actList.innerHTML = dashStats.actividadReciente.map(function(r) {
-                    const dotClass = (r.modulo || '').toLowerCase().replace(/\s/g, '');
-                    const d = new Date(r.fecha);
-                    const time = d.toLocaleDateString('es-GT', {day:'2-digit',month:'2-digit',year:'numeric'}) + ' ' +
-                                 d.toLocaleTimeString('es-GT', {hour:'2-digit',minute:'2-digit'});
-                    return '<div class="activity-item"><div class="activity-dot ' + dotClass + '"></div><div class="activity-text"><strong>' + (r.accion || '') + '</strong> \u2014 ' + (r.detalle || '') + '</div><span class="activity-time">' + time + '</span></div>';
-                }).join('');
+                    // Actividad reciente
+                    const actList = document.getElementById('activityList');
+                    if (dashStats.actividadReciente && dashStats.actividadReciente.length > 0) {
+                        actList.innerHTML = dashStats.actividadReciente.map(function(r) {
+                            const dotClass = (r.modulo || '').toLowerCase().replace(/\s/g, '');
+                            const d = new Date(r.fecha);
+                            const time = d.toLocaleDateString('es-GT', {day:'2-digit',month:'2-digit',year:'numeric'}) + ' ' +
+                                         d.toLocaleTimeString('es-GT', {hour:'2-digit',minute:'2-digit'});
+                            return '<div class="activity-item"><div class="activity-dot ' + dotClass + '"></div><div class="activity-text"><strong>' + (r.accion || '') + '</strong> \u2014 ' + (r.detalle || '') + '</div><span class="activity-time">' + time + '</span></div>';
+                        }).join('');
+                    } else {
+                        actList.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><p>No hay actividad reciente registrada</p></div>';
+                    }
+                } else {
+                    // API respondio pero sin datos validos
+                    document.getElementById('statInventario').textContent = '—';
+                    document.getElementById('statCostos').textContent = '—';
+                    document.getElementById('statAuditoria').textContent = '—';
+                }
+            } catch (e) {
+                console.error('Error al cargar dashboard desde API:', e);
+                document.getElementById('statInventario').textContent = 'Error';
+                document.getElementById('statCostos').textContent = 'Error';
+                document.getElementById('statAuditoria').textContent = 'Error';
             }
         } else {
             document.getElementById('statInventario').textContent = FiNovaDB.count(FiNovaDB.COLLECTIONS.INVENTARIO);

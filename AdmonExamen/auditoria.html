@@ -140,7 +140,12 @@
     }
 
     async function applyFilters() {
-        filteredRecords = await FiNovaAudit.getFiltered(getFilters());
+        try {
+            filteredRecords = await FiNovaAudit.getFiltered(getFilters());
+        } catch (e) {
+            console.error('Error al filtrar auditoria:', e);
+            filteredRecords = [];
+        }
         renderTable();
     }
 
@@ -161,7 +166,7 @@
             const color = moduleColors[r.modulo] || 'var(--text-muted)';
             return `<tr>
                 <td style="font-size:0.78rem; white-space:nowrap;">${FiNovaAudit.formatDate(r.fecha)}</td>
-                <td style="font-weight:550;">${r.usuario}</td>
+                <td style="font-weight:550;">${r.usuarioNombre || r.usuario || '—'}</td>
                 <td><span style="display:inline-flex; align-items:center; gap:0.3rem; font-size:0.78rem; font-weight:600; color:${color};"><span style="width:6px;height:6px;border-radius:50%;background:${color};"></span>${r.modulo}</span></td>
                 <td style="font-weight:550;">${r.accion}</td>
                 <td style="font-size:0.8rem; color:var(--text-secondary);">${r.detalle}</td>
@@ -172,15 +177,22 @@
     async function updateStats() {
         const stats = await FiNovaAudit.getStats();
         document.getElementById('auditTotal').textContent = stats.total;
-        document.getElementById('auditUsers').textContent = Object.keys(stats.byUser).length;
-        document.getElementById('auditModules').textContent = Object.keys(stats.byModule).length;
 
-        // Update user filter
+        // Mostrar usuarios activos: usar usuariosActivos del API o cantidad de claves en byUser
+        var usersCount = stats.usuariosActivos || Object.keys(stats.byUser || {}).length;
+        document.getElementById('auditUsers').textContent = usersCount;
+
+        var moduleKeys = Object.keys(stats.byModule || {});
+        document.getElementById('auditModules').textContent = moduleKeys.length;
+
+        // Update user filter (solo disponible en modo localStorage)
         const userSelect = document.getElementById('filterUser');
-        const currentUser = userSelect.value;
-        const users = Object.keys(stats.byUser);
-        userSelect.innerHTML = '<option value="Todos">Todos</option>' + users.map(u => `<option value="${u}">${u}</option>`).join('');
-        userSelect.value = currentUser;
+        if (typeof FinovaAPI === 'undefined') {
+            const currentUser = userSelect.value;
+            const users = Object.keys(stats.byUser || {});
+            userSelect.innerHTML = '<option value="Todos">Todos</option>' + users.map(u => `<option value="${u}">${u}</option>`).join('');
+            userSelect.value = currentUser;
+        }
 
         // Chart
         renderChart(stats);
@@ -190,8 +202,15 @@
         const ctx = document.getElementById('auditChart').getContext('2d');
         if (auditChart) auditChart.destroy();
 
-        const modules = Object.keys(stats.byModule);
-        const counts = Object.values(stats.byModule);
+        var byModule = stats.byModule || {};
+        // Si byModule es un array (formato directo de API sin normalizar), convertirlo
+        if (Array.isArray(byModule)) {
+            var obj = {};
+            byModule.forEach(function(m) { obj[m.modulo] = m.count; });
+            byModule = obj;
+        }
+        const modules = Object.keys(byModule);
+        const counts = Object.values(byModule);
         const colors = ['#0d9488', '#3b82f6', '#22a06b', '#e67e22', '#e84670', '#7c3aed', '#8b9bb5'];
 
         auditChart = new Chart(ctx, {
@@ -232,7 +251,12 @@
     }
 
     async function refresh() {
-        filteredRecords = await FiNovaAudit.getAll();
+        try {
+            filteredRecords = await FiNovaAudit.getAll();
+        } catch (e) {
+            console.error('Error al cargar auditoria:', e);
+            filteredRecords = [];
+        }
         renderTable();
         await updateStats();
     }

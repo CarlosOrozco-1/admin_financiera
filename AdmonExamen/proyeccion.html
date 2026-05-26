@@ -112,6 +112,26 @@
                         <div class="report-text" id="projAnalysis"><p style="color: var(--text-muted); font-style: italic;">Genere una proyección para ver el análisis comparativo.</p></div>
                     </div>
                 </div>
+
+                <!-- Saved projections -->
+                <div class="card">
+                    <div class="section-header" style="margin-bottom: 0.75rem;">
+                        <div class="section-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></div>
+                        <div>
+                            <h2 class="section-title">Proyecciones Guardadas</h2>
+                            <p class="section-subtitle">Cargue o elimine proyecciones previamente guardadas</p>
+                        </div>
+                    </div>
+                    <div class="module-toolbar" style="margin-bottom:0.75rem;">
+                        <button class="btn btn-primary" onclick="cargarProyeccionesGuardadas()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Actualizar</button>
+                    </div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead><tr><th>ID</th><th>Período</th><th>Crecimiento</th><th>Total Actual</th><th>Total Proyectado</th><th>Fecha</th><th>Acciones</th></tr></thead>
+                            <tbody id="savedProjBody"><tr><td colspan="7"><div class="empty-state"><p>No hay proyecciones guardadas</p></div></td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
             </main>
         </div>
     </div>
@@ -134,7 +154,19 @@
 
     async function generateProjection() {
         const pct = parseFloat(document.getElementById('growthPct').value) || 0;
-        const items = await FiNovaInventory.getAll();
+        var items = [];
+        try {
+            items = await FiNovaInventory.getAll();
+        } catch (e) {
+            console.error('Error al cargar inventario para proyeccion:', e);
+        }
+        if (!items || items.length === 0) {
+            currentProjection = [];
+            renderTable();
+            if (projChart) { projChart.destroy(); projChart = null; }
+            document.getElementById('projAnalysis').innerHTML = '<p style="color: var(--text-muted); font-style: italic;">No hay productos en el inventario para generar la proyeccion.</p>';
+            return;
+        }
         currentProjection = FiNovaProjection.generate(items, pct);
         renderTable();
         renderChart();
@@ -191,9 +223,19 @@
     }
 
     async function saveProj() {
+        if (!currentProjection || currentProjection.length === 0) {
+            showToast('Genere una proyeccion primero');
+            return;
+        }
         const pct = parseFloat(document.getElementById('growthPct').value) || 0;
-        await FiNovaProjection.saveProjection(currentProjection, pct);
-        showToast('Proyecci\u00f3n guardada');
+        try {
+            await FiNovaProjection.saveProjection(currentProjection, pct);
+            showToast('Proyeccion guardada');
+            await cargarProyeccionesGuardadas();
+        } catch (e) {
+            console.error('Error al guardar proyeccion:', e);
+            showToast('Error al guardar la proyeccion');
+        }
     }
 
     function exportProjExcel() {
@@ -210,10 +252,102 @@
         showToast('PDF generado');
     }
 
+    // ---- PROYECCIONES GUARDADAS ----
+    async function cargarProyeccionesGuardadas() {
+        const body = document.getElementById('savedProjBody');
+        var records = [];
+        try {
+            if (typeof FinovaAPI !== 'undefined') {
+                records = await FinovaAPI.proyecciones.getAll();
+            } else {
+                records = FiNovaDB.getAll(FiNovaDB.COLLECTIONS.PROYECCIONES);
+            }
+        } catch (e) {
+            console.error('Error al cargar proyecciones guardadas:', e);
+        }
+        if (!records || records.length === 0) {
+            body.innerHTML = '<tr><td colspan="7"><div class="empty-state"><p>No hay proyecciones guardadas</p></div></td></tr>';
+            return;
+        }
+        body.innerHTML = records.map(function(r) {
+            var fecha = r.fecha || r.createdAt || '';
+            var fechaStr = fecha ? new Date(fecha).toLocaleDateString('es-GT', {day:'2-digit',month:'2-digit',year:'numeric'}) : '—';
+            return '<tr>' +
+                '<td style="font-weight:600;color:var(--accent);">' + (r.id || '—') + '</td>' +
+                '<td>' + (r.periodo || '—') + '</td>' +
+                '<td>' + (r.crecimiento || 0) + '%</td>' +
+                '<td>' + (r.totalActual || 0).toLocaleString('es-GT') + '</td>' +
+                '<td style="font-weight:600;color:var(--accent);">' + (r.totalProyectado || 0).toLocaleString('es-GT') + '</td>' +
+                '<td style="font-size:0.78rem;">' + fechaStr + '</td>' +
+                '<td><div class="table-actions">' +
+                    '<button class="table-action-btn" onclick="cargarProyeccion(' + (r.id || 0) + ')" title="Cargar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg></button>' +
+                    '<button class="table-action-btn delete" onclick="eliminarProyeccion(' + (r.id || 0) + ')" title="Eliminar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>' +
+                '</div></td></tr>';
+        }).join('');
+    }
+
+    async function cargarProyeccion(id) {
+        var item = null;
+        try {
+            if (typeof FinovaAPI !== 'undefined') {
+                item = await FinovaAPI.proyecciones.getById(id);
+            } else {
+                item = FiNovaDB.getById(FiNovaDB.COLLECTIONS.PROYECCIONES, id);
+            }
+        } catch (e) {
+            console.error('Error al cargar proyeccion:', e);
+        }
+        if (!item) { showToast('No se encontro la proyeccion'); return; }
+        // Restaurar los items de la proyeccion en la vista actual
+        var detalles = item.detalles || item.items || [];
+        if (detalles.length === 0) { showToast('La proyeccion no tiene detalles'); return; }
+        currentProjection = detalles.map(function(d) {
+            var dif = d.cantidadProyectada - d.cantidadActual;
+            return {
+                id: d.inventarioId || d.id,
+                codigo: d.codigo,
+                nombre: d.nombre,
+                categoria: d.categoria,
+                cantidadActual: d.cantidadActual,
+                cantidadProyectada: d.cantidadProyectada,
+                diferencia: d.diferencia !== undefined ? d.diferencia : dif,
+                porcentaje: d.porcentaje || (d.cantidadActual > 0 ? (dif / d.cantidadActual * 100).toFixed(1) + '%' : '0.0%'),
+                costoUnitario: d.costoUnitario || 0,
+                valorActual: d.valorActual !== undefined ? d.valorActual : d.cantidadActual * (d.costoUnitario || 0),
+                valorProyectado: d.valorProyectado !== undefined ? d.valorProyectado : d.cantidadProyectada * (d.costoUnitario || 0)
+            };
+        });
+        document.getElementById('growthPct').value = item.crecimiento || 0;
+        document.getElementById('projPeriod').value = item.periodo || '';
+        renderTable();
+        renderChart();
+        renderAnalysis();
+        document.querySelector('.chart-container').scrollIntoView({ behavior: 'smooth' });
+        showToast('Proyeccion cargada en la vista');
+    }
+
+    async function eliminarProyeccion(id) {
+        if (!confirm('\u00bfEst\u00e1 seguro de eliminar esta proyeccion?')) return;
+        try {
+            if (typeof FinovaAPI !== 'undefined') {
+                await FinovaAPI.proyecciones.remove(id);
+            } else {
+                FiNovaDB.remove(FiNovaDB.COLLECTIONS.PROYECCIONES, id);
+            }
+            FiNovaAudit.log('Proyeccion', 'Eliminar', 'Proyeccion ID: ' + id);
+            showToast('Proyeccion eliminada');
+            await cargarProyeccionesGuardadas();
+        } catch (e) {
+            console.error('Error al eliminar proyeccion:', e);
+            showToast('Error al eliminar la proyeccion');
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', async function() {
         const s = FiNovaAuth.getSession();
         if (s) { document.getElementById('sidebarUserName').textContent = s.nombre; document.getElementById('sidebarUserRole').textContent = s.role; document.getElementById('sidebarAvatar').textContent = s.nombre.charAt(0).toUpperCase(); }
         await generateProjection();
+        await cargarProyeccionesGuardadas();
     });
     </script>
 </body>

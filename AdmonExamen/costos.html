@@ -242,6 +242,28 @@
                     </div>
                 </section>
 
+                <!-- SECCIÓN 6: REGISTROS GUARDADOS -->
+                <section class="section" id="registros">
+                    <div class="section-header">
+                        <div class="section-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></div>
+                        <div>
+                            <h2 class="section-title">6. Registros Guardados</h2>
+                            <p class="section-subtitle">Costos previamente guardados en la base de datos</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="module-toolbar" style="margin-bottom:0.75rem;">
+                            <button class="btn btn-primary" onclick="cargarRegistros()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Actualizar lista</button>
+                        </div>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead><tr><th>ID</th><th>Producto</th><th>Código</th><th>Total Est.</th><th>Total Real</th><th>Variación</th><th>Resultado</th><th>Fecha</th><th>Acciones</th></tr></thead>
+                                <tbody id="costosBody"><tr><td colspan="9"><div class="empty-state"><p>Cargando registros guardados...</p></div></td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
                 <!-- EXPLICACIÓN -->
                 <div class="explanation-card">
                     <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>¿Cómo se realizan los cálculos?</h4>
@@ -415,6 +437,7 @@
             const payload = {
                 codigo: document.getElementById('codigoProducto').value,
                 producto: document.getElementById('nombreProducto').value,
+                cantidad: parseInt(document.getElementById('cantidadProducida').value) || 0,
                 tipoCosto: 'Predeterminado',
                 mpCantEst: getVal('mpCantEst'), mpPrecioEst: getVal('mpPrecioEst'),
                 mpCantReal: getVal('mpCantReal'), mpPrecioReal: getVal('mpPrecioReal'),
@@ -427,6 +450,7 @@
             if (result.ok) {
                 FiNovaAudit.log('Costos', 'Guardar en BD', 'Producto: ' + document.getElementById('nombreProducto').value);
                 showToast('Registro guardado en base de datos via API');
+                await cargarRegistros();
             } else {
                 showToast('Error: ' + result.message);
             }
@@ -440,7 +464,126 @@
             });
             FiNovaAudit.log('Costos', 'Guardar en BD', 'Producto: ' + document.getElementById('nombreProducto').value);
             showToast('Registro guardado en base de datos');
+            await cargarRegistros();
         }
+    }
+
+    // ---- REGISTROS GUARDADOS ----
+    async function cargarRegistros() {
+        const body = document.getElementById('costosBody');
+        var records = [];
+        try {
+            if (typeof FinovaAPI !== 'undefined') {
+                records = await FinovaAPI.costos.getAll();
+            } else {
+                records = FiNovaDB.getAll(FiNovaDB.COLLECTIONS.COSTOS);
+            }
+        } catch (e) {
+            console.error('Error al cargar registros de costos:', e);
+        }
+        if (!records || records.length === 0) {
+            body.innerHTML = '<tr><td colspan="9"><div class="empty-state"><p>No hay registros guardados</p></div></td></tr>';
+            return;
+        }
+        body.innerHTML = records.map(function(r) {
+            var totalEst = r.totalEst || (r.estandar ? (r.estandar.mp + r.estandar.mo + r.estandar.ci) : 0);
+            var totalReal = r.totalReal || (r.real ? (r.real.mp + r.real.mo + r.real.ci) : 0);
+            var variacion = r.variacion !== undefined ? r.variacion : (totalReal - totalEst);
+            var resultado = r.resultado || (variacion < 0 ? 'Favorable' : variacion > 0 ? 'Desfavorable' : 'Sin variacion');
+            var fecha = r.fecha || r.createdAt || '';
+            var fechaStr = fecha ? new Date(fecha).toLocaleDateString('es-GT', {day:'2-digit',month:'2-digit',year:'numeric'}) : '—';
+            return '<tr>' +
+                '<td style="font-weight:600;color:var(--accent);">' + (r.id || '—') + '</td>' +
+                '<td style="font-weight:550;">' + (r.producto || '—') + '</td>' +
+                '<td>' + (r.codigo || '—') + '</td>' +
+                '<td>Q ' + Number(totalEst).toLocaleString('es-GT', {minimumFractionDigits:2}) + '</td>' +
+                '<td>Q ' + Number(totalReal).toLocaleString('es-GT', {minimumFractionDigits:2}) + '</td>' +
+                '<td class="' + (variacion < 0 ? 'diff-positive' : variacion > 0 ? 'diff-negative' : '') + '">Q ' + Number(variacion).toLocaleString('es-GT', {minimumFractionDigits:2}) + '</td>' +
+                '<td>' + resultado + '</td>' +
+                '<td style="font-size:0.78rem;">' + fechaStr + '</td>' +
+                '<td><div class="table-actions">' +
+                    '<button class="table-action-btn" onclick="cargarCosto(' + r.id + ')" title="Cargar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg></button>' +
+                    '<button class="table-action-btn delete" onclick="eliminarCosto(' + r.id + ')" title="Eliminar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>' +
+                '</div></td></tr>';
+        }).join('');
+    }
+
+    async function cargarCosto(id) {
+        var item = null;
+        try {
+            if (typeof FinovaAPI !== 'undefined') {
+                item = await FinovaAPI.costos.getById(id);
+            } else {
+                item = FiNovaDB.getById(FiNovaDB.COLLECTIONS.COSTOS, id);
+            }
+        } catch (e) {
+            console.error('Error al cargar costo:', e);
+        }
+        if (!item) { showToast('No se encontro el registro'); return; }
+        document.getElementById('nombreProducto').value = item.producto || '';
+        document.getElementById('codigoProducto').value = item.codigo || '';
+        document.getElementById('cantidadProducida').value = item.cantidad || '';
+        document.getElementById('mpCantEst').value = item.mpCantEst || (item.estandar ? item.estandar.mpCant : '');
+        document.getElementById('mpPrecioEst').value = item.mpPrecioEst || (item.estandar ? item.estandar.mpPrecio : '');
+        document.getElementById('moCantEst').value = item.moCantEst || (item.estandar ? item.estandar.moCant : '');
+        document.getElementById('moPrecioEst').value = item.moPrecioEst || (item.estandar ? item.estandar.moPrecio : '');
+        document.getElementById('ciCantEst').value = item.ciCantEst || (item.estandar ? item.estandar.ciCant : '');
+        document.getElementById('ciPrecioEst').value = item.ciPrecioEst || (item.estandar ? item.estandar.ciPrecio : '');
+        document.getElementById('mpCantReal').value = item.mpCantReal || (item.real ? item.real.mpCant : '');
+        document.getElementById('mpPrecioReal').value = item.mpPrecioReal || (item.real ? item.real.mpPrecio : '');
+        document.getElementById('moCantReal').value = item.moCantReal || (item.real ? item.real.moCant : '');
+        document.getElementById('moPrecioReal').value = item.moPrecioReal || (item.real ? item.real.moPrecio : '');
+        document.getElementById('ciCantReal').value = item.ciCantReal || (item.real ? item.real.ciCant : '');
+        document.getElementById('ciPrecioReal').value = item.ciPrecioReal || (item.real ? item.real.ciPrecio : '');
+        calcularTodo();
+        // Desplazar al formulario
+        document.getElementById('producto').scrollIntoView({ behavior: 'smooth' });
+        showToast('Registro cargado en el formulario');
+    }
+
+    async function eliminarCosto(id) {
+        if (!confirm('\u00bfEst\u00e1 seguro de eliminar este registro de costos?')) return;
+        try {
+            if (typeof FinovaAPI !== 'undefined') {
+                await FinovaAPI.costos.remove(id);
+            } else {
+                FiNovaDB.remove(FiNovaDB.COLLECTIONS.COSTOS, id);
+            }
+            FiNovaAudit.log('Costos', 'Eliminar', 'Registro ID: ' + id);
+            showToast('Registro eliminado');
+            await cargarRegistros();
+        } catch (e) {
+            console.error('Error al eliminar costo:', e);
+            showToast('Error al eliminar el registro');
+        }
+    }
+
+    // ---- PERSISTENCIA DEL FORMULARIO ----
+    var FORM_KEY = 'finova_costos_form';
+
+    // Guardar formulario en sessionStorage al escribir
+    document.addEventListener('input', function() {
+        guardarFormStorage();
+    });
+
+    function guardarFormStorage() {
+        var data = {};
+        document.querySelectorAll('#producto input, #estandar input, #real input').forEach(function(el) {
+            data[el.id] = el.value;
+        });
+        try { sessionStorage.setItem(FORM_KEY, JSON.stringify(data)); } catch(e) {}
+    }
+
+    function restaurarFormStorage() {
+        try {
+            var saved = sessionStorage.getItem(FORM_KEY);
+            if (!saved) return;
+            var data = JSON.parse(saved);
+            Object.keys(data).forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) el.value = data[id];
+            });
+        } catch(e) {}
     }
 
     // Init
@@ -451,7 +594,9 @@
             document.getElementById('sidebarUserRole').textContent = session.role;
             document.getElementById('sidebarAvatar').textContent = session.nombre.charAt(0).toUpperCase();
         }
+        restaurarFormStorage();
         calcularTodo();
+        cargarRegistros();
     });
     </script>
 </body>

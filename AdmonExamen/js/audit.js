@@ -146,7 +146,23 @@ const FiNovaAudit = (function () {
     async function getStats() {
         if (useAPI) {
             var res = await FinovaAPI.auditoria.getStats();
-            return res || { total: 0, byModule: [], usuariosActivos: 0 };
+            if (res && res.byModule) {
+                // La API devuelve byModule como array [{modulo, count}],
+                // convertir a objeto {Modulo: count} para compatibilidad con el frontend
+                var byModuleObj = {};
+                var byUserObj = {};
+                res.byModule.forEach(function(m) {
+                    byModuleObj[m.modulo] = m.count;
+                });
+                return {
+                    total: res.total || 0,
+                    byModule: byModuleObj,
+                    byAction: {},
+                    byUser: byUserObj,
+                    usuariosActivos: res.usuariosActivos || 0
+                };
+            }
+            return { total: 0, byModule: {}, byAction: {}, byUser: {}, usuariosActivos: 0 };
         }
         try {
             var records = JSON.parse(localStorage.getItem(COLLECTION) || '[]');

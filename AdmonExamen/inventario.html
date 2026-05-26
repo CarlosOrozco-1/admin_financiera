@@ -134,10 +134,15 @@
     function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebarOverlay').classList.remove('active'); }
 
     async function renderInventory() {
-        const items = await FiNovaInventory.getFiltered();
+        var items = [];
+        try {
+            items = await FiNovaInventory.getFiltered();
+        } catch (e) {
+            console.error('Error al cargar inventario:', e);
+        }
         const body = document.getElementById('invBody');
 
-        if (items.length === 0) {
+        if (!items || items.length === 0) {
             body.innerHTML = '<tr><td colspan="8"><div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg><p>No se encontraron productos</p></div></td></tr>';
             return;
         }
@@ -151,15 +156,25 @@
     }
 
     async function updateStats() {
-        const stats = await FiNovaInventory.getStats();
-        document.getElementById('statTotal').textContent = stats.totalItems;
-        document.getElementById('statValor').textContent = 'Q ' + stats.totalValue.toLocaleString('es-GT', {minimumFractionDigits:2});
-        document.getElementById('statUnidades').textContent = stats.totalUnits.toLocaleString('es-GT');
-        document.getElementById('statLowStock').textContent = stats.lowStock;
+        var stats = { totalItems: 0, totalValue: 0, totalUnits: 0, lowStock: 0 };
+        try {
+            stats = await FiNovaInventory.getStats();
+        } catch (e) {
+            console.error('Error al cargar estadisticas:', e);
+        }
+        document.getElementById('statTotal').textContent = stats.totalItems || 0;
+        document.getElementById('statValor').textContent = 'Q ' + (stats.totalValue || 0).toLocaleString('es-GT', {minimumFractionDigits:2});
+        document.getElementById('statUnidades').textContent = (stats.totalUnits || 0).toLocaleString('es-GT');
+        document.getElementById('statLowStock').textContent = stats.lowStock || 0;
     }
 
     async function updateCategories() {
-        const cats = await FiNovaInventory.getCategories();
+        var cats = [];
+        try {
+            cats = await FiNovaInventory.getCategories();
+        } catch (e) {
+            console.error('Error al cargar categorias:', e);
+        }
         const select = document.getElementById('categoryFilter');
         const current = select.value;
         select.innerHTML = '<option value="Todas">Todas las categor\u00edas</option>' + cats.map(function(c) { return '<option value="' + c + '">' + c + '</option>'; }).join('');
