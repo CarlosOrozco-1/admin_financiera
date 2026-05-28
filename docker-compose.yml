@@ -22,6 +22,20 @@ services:
       retries: 12
       start_period: 30s
     restart: unless-stopped
+  db-init:
+    image: mcr.microsoft.com/mssql/tools:latest
+    container_name: finova-db-init
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    environment:
+      - SA_PASSWORD=${SA_PASSWORD}
+    volumes:
+      - ./docker/db-init:/init
+      - ./FinovaDb_Scripts:/scripts
+    entrypoint: /bin/bash
+    command: ["/bin/bash", "/init/entrypoint.sh"]
+    restart: "no"
 
 volumes:
   # Volumen nominal para datos persistentes de SQL Server.
