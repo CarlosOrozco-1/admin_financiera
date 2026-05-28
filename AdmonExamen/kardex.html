@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="FINOVA — Módulo de Kardex">
+    <title>Kardex | FINOVA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/inventory.css">
+    <script src="js/api.js"></script>
+    <script src="js/database.js"></script>
+    <script src="js/audit.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/theme.js"></script>
+</head>
+<body>
+    <div class="app-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header"><img src="FINOVA-LOGO/Logotipo-Dark.png" alt="FINOVA" class="sidebar-logo"></div>
+            <nav class="sidebar-nav">
+                <span class="sidebar-section-label">Principal</span>
+                <a href="dashboard.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</a>
+                <a href="costos.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>Costos</a>
+                <span class="sidebar-section-label">Inventarios</span>
+                <a href="inventario.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>Inventario</a>
+                <a href="kardex.html" class="sidebar-link active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 22h14a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v4"/><polyline points="14 2 14 8 20 8"/><path d="M2 15h10"/><path d="M9 18l3-3-3-3"/></svg>Kardex</a>
+                <a href="proyeccion.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Proyección</a>
+                <span class="sidebar-section-label">Sistema</span>
+                <a href="auditoria.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Auditoría</a>
+                <a href="usuarios.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Usuarios</a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="sidebar-user"><div class="sidebar-avatar" id="sidebarAvatar">A</div><div class="sidebar-user-info"><div class="sidebar-user-name" id="sidebarUserName">Admin</div><div class="sidebar-user-role" id="sidebarUserRole">admin</div></div></div>
+                <button class="sidebar-logout" onclick="FiNovaAuth.logout()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Cerrar sesión</button>
+            </div>
+        </aside>
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+        <div class="main-area">
+            <header class="top-bar">
+                <div class="top-bar-left">
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+                    <div class="page-title-bar"><h1 class="page-title">Kardex (Historial de Movimientos)</h1><span class="page-breadcrumb">FINOVA / Kardex</span></div>
+                </div>
+                <div class="top-bar-right">
+                    <div class="theme-switcher">
+                        <button class="theme-btn" id="btn-toggle-dark" onclick="toggleClaroOscuro()"><svg id="theme-icon-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg><span id="theme-text-toggle">Tema</span></button>
+                    </div>
+                </div>
+            </header>
+
+            <main class="page-container">
+                <div class="module-toolbar">
+                    <div class="toolbar-search">
+                        <select id="productFilter" onchange="filterKardex()" class="btn btn-secondary" style="border:1px solid var(--border); padding: 0.5rem 0.8rem; font-size:0.8rem; width: 250px;">
+                            <option value="">Todos los productos</option>
+                        </select>
+                    </div>
+                    <div class="toolbar-actions">
+                        <select id="typeFilter" onchange="filterKardex()" class="btn btn-secondary" style="border:1px solid var(--border); padding: 0.5rem 0.8rem; font-size:0.8rem;">
+                            <option value="Todos">Todos los Movimientos</option>
+                            <option value="INGRESO">Ingresos (Entradas)</option>
+                            <option value="EGRESO">Egresos (Salidas)</option>
+                        </select>
+                        <button class="btn btn-secondary" onclick="refreshKardex()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Actualizar</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="table-wrapper">
+                        <table id="kardexTable">
+                            <thead><tr><th>Fecha</th><th>Producto</th><th>Tipo</th><th>Cantidad</th><th>Costo Unit.</th><th>Costo Total</th><th>Detalle</th><th>Usuario</th></tr></thead>
+                            <tbody id="kardexBody"><tr><td colspan="8" class="empty-state"><p>Cargando kardex...</p></td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast"><div class="toast-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><polyline points="20 6 9 17 4 12"/></svg></div><span class="toast-text" id="toastText"></span></div>
+
+    <script src="js/kardex.js"></script>
+    <script>
+    if (!FiNovaAuth.requireAuth()) {}
+
+    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidebarOverlay').classList.toggle('active'); }
+    function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebarOverlay').classList.remove('active'); }
+
+    async function loadProducts() {
+        if (typeof FinovaAPI !== 'undefined') {
+            const prods = await FinovaAPI.inventario.getAll();
+            const select = document.getElementById('productFilter');
+            const current = select.value;
+            select.innerHTML = '<option value="">Todos los productos</option>' + 
+                prods.map(p => '<option value="' + p.id + '">' + p.codigo + ' - ' + p.nombre + '</option>').join('');
+            select.value = current;
+        }
+    }
+
+    async function filterKardex() {
+        FiNovaKardex.setProduct(document.getElementById('productFilter').value);
+        FiNovaKardex.setType(document.getElementById('typeFilter').value);
+        await renderKardex();
+    }
+
+    async function refreshKardex() {
+        await loadProducts();
+        await renderKardex();
+    }
+
+    async function renderKardex() {
+        var items = [];
+        try {
+            items = await FiNovaKardex.getAll();
+        } catch (e) {
+            console.error('Error al cargar kardex:', e);
+        }
+        const body = document.getElementById('kardexBody');
+
+        if (!items || items.length === 0) {
+            body.innerHTML = '<tr><td colspan="8"><div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40"><path d="M4 22h14a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v4"/><polyline points="14 2 14 8 20 8"/><path d="M2 15h10"/><path d="M9 18l3-3-3-3"/></svg><p>No hay movimientos registrados</p></div></td></tr>';
+            return;
+        }
+
+        body.innerHTML = items.map(function(item) {
+            const fecha = new Date(item.fecha).toLocaleString('es-GT');
+            const colorTipo = item.tipoMovimiento === 'INGRESO' ? 'color: var(--success);' : 'color: var(--danger);';
+            const signo = item.tipoMovimiento === 'INGRESO' ? '+' : '-';
+            const prodName = item.inventario ? (item.inventario.codigo + ' - ' + item.inventario.nombre) : 'Desconocido';
+            const userName = item.usuario ? item.usuario.nombre : 'Desconocido';
+            const costoTotal = (item.cantidad || 0) * (item.costoUnitario || 0);
+            
+            return '<tr>' +
+                   '<td>' + fecha + '</td>' +
+                   '<td style="font-weight:600;">' + prodName + '</td>' +
+                   '<td style="font-weight:bold; ' + colorTipo + '">' + item.tipoMovimiento + '</td>' +
+                   '<td style="font-weight:600; ' + colorTipo + '">' + signo + item.cantidad.toLocaleString('es-GT') + '</td>' +
+                   '<td>Q ' + item.costoUnitario.toFixed(2) + '</td>' +
+                   '<td style="font-weight:600;">Q ' + costoTotal.toLocaleString('es-GT', {minimumFractionDigits:2, maximumFractionDigits:2}) + '</td>' +
+                   '<td>' + (item.detalle || '\u2014') + '</td>' +
+                   '<td><span style="font-size:0.8rem; color:var(--text-secondary);">' + userName + '</span></td>' +
+                   '</tr>';
+        }).join('');
+    }
+
+    function showToast(msg) { const t = document.getElementById('toast'); document.getElementById('toastText').textContent = msg; t.classList.add('show'); setTimeout(function() { t.classList.remove('show'); }, 3000); }
+
+    document.addEventListener('DOMContentLoaded', async function() {
+        const s = FiNovaAuth.getSession();
+        if (s) { document.getElementById('sidebarUserName').textContent = s.nombre; document.getElementById('sidebarUserRole').textContent = s.role; document.getElementById('sidebarAvatar').textContent = s.nombre.charAt(0).toUpperCase(); }
+        await refreshKardex();
+    });
+    </script>
+</body>
+</html>

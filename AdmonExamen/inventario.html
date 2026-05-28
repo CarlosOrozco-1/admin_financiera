@@ -31,9 +31,11 @@
                 <a href="costos.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>Costos</a>
                 <span class="sidebar-section-label">Inventarios</span>
                 <a href="inventario.html" class="sidebar-link active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>Inventario</a>
+                <a href="kardex.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 22h14a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v4"/><polyline points="14 2 14 8 20 8"/><path d="M2 15h10"/><path d="M9 18l3-3-3-3"/></svg>Kardex</a>
                 <a href="proyeccion.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Proyección</a>
                 <span class="sidebar-section-label">Sistema</span>
                 <a href="auditoria.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Auditoría</a>
+                <a href="usuarios.html" class="sidebar-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Usuarios</a>
             </nav>
             <div class="sidebar-footer">
                 <div class="sidebar-user"><div class="sidebar-avatar" id="sidebarAvatar">A</div><div class="sidebar-user-info"><div class="sidebar-user-name" id="sidebarUserName">Admin</div><div class="sidebar-user-role" id="sidebarUserRole">admin</div></div></div>
@@ -120,11 +122,33 @@
         </div>
     </div>
 
+    <!-- MODAL KARDEX -->
+    <div class="modal-overlay" id="movModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="movTitle">Registrar Movimiento</h3>
+                <button class="modal-close" onclick="closeMovModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            </div>
+            <form class="modal-form" onsubmit="saveMovimiento(event)">
+                <input type="hidden" id="movInvId">
+                <input type="hidden" id="movTipo">
+                <div class="form-group"><label>Producto</label><input type="text" id="movProdName" readonly style="background:var(--bg-secondary);"></div>
+                <div class="form-group"><label>Cantidad</label><input type="number" id="movCantidad" placeholder="1" min="1" required></div>
+                <div class="form-group"><label>Detalle / Motivo</label><input type="text" id="movDetalle" placeholder="Ej: Compra a proveedor" required></div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeMovModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="movSubmitBtn">Registrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- TOAST -->
     <div class="toast" id="toast"><div class="toast-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><polyline points="20 6 9 17 4 12"/></svg></div><span class="toast-text" id="toastText"></span></div>
 
     <script src="js/utils.js"></script>
     <script src="js/inventory.js"></script>
+    <script src="js/kardex.js"></script>
     <script src="js/excel-handler.js"></script>
     <script src="js/pdf-export.js"></script>
     <script>
@@ -151,7 +175,11 @@
             const valor = (item.cantidad || 0) * (item.costoUnitario || 0);
             const status = FiNovaInventory.getStockStatus(item);
             const label = FiNovaInventory.getStockLabel(status);
-            return '<tr><td style="font-weight:600; color: var(--accent);">' + (item.codigo || '\u2014') + '</td><td style="font-weight:550;">' + (item.nombre || '\u2014') + '</td><td><span style="font-size:0.78rem; color:var(--text-secondary);">' + (item.categoria || '\u2014') + '</span></td><td style="font-weight:600;">' + (item.cantidad || 0).toLocaleString('es-GT') + '</td><td>Q ' + (item.costoUnitario || 0).toFixed(2) + '</td><td style="font-weight:600;">Q ' + valor.toLocaleString('es-GT', {minimumFractionDigits:2}) + '</td><td><span class="stock-badge ' + status + '">' + label + '</span></td><td><div class="table-actions"><button class="table-action-btn" onclick="editProduct(' + item.id + ')" title="Editar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="table-action-btn delete" onclick="deleteProduct(' + item.id + ')" title="Eliminar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div></td></tr>';
+            return '<tr><td style="font-weight:600; color: var(--accent);">' + (item.codigo || '\u2014') + '</td><td style="font-weight:550;">' + (item.nombre || '\u2014') + '</td><td><span style="font-size:0.78rem; color:var(--text-secondary);">' + (item.categoria || '\u2014') + '</span></td><td style="font-weight:600;">' + (item.cantidad || 0).toLocaleString('es-GT') + '</td><td>Q ' + (item.costoUnitario || 0).toFixed(2) + '</td><td style="font-weight:600;">Q ' + valor.toLocaleString('es-GT', {minimumFractionDigits:2}) + '</td><td><span class="stock-badge ' + status + '">' + label + '</span></td><td><div class="table-actions">' + 
+                '<button class="table-action-btn" style="color:var(--success);" onclick="openMovModal(' + item.id + ', \'INGRESO\', \'' + (item.nombre).replace(/'/g, "\\'") + '\')" title="Registrar Ingreso"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></button>' + 
+                '<button class="table-action-btn" style="color:var(--danger);" onclick="openMovModal(' + item.id + ', \'EGRESO\', \'' + (item.nombre).replace(/'/g, "\\'") + '\')" title="Registrar Egreso"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></button>' + 
+                '<button class="table-action-btn" onclick="editProduct(' + item.id + ')" title="Editar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>' + 
+                '<button class="table-action-btn delete" onclick="deleteProduct(' + item.id + ')" title="Eliminar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div></td></tr>';
         }).join('');
     }
 
@@ -199,9 +227,41 @@
         document.getElementById('fCosto').value = '';
         document.getElementById('fMinimo').value = '10';
         document.getElementById('productModal').classList.add('active');
+        document.getElementById('fCantidad').readOnly = false; // Permitir al agregar
     }
 
     function closeModal() { document.getElementById('productModal').classList.remove('active'); }
+
+    function openMovModal(id, tipo, nombre) {
+        document.getElementById('movInvId').value = id;
+        document.getElementById('movTipo').value = tipo;
+        document.getElementById('movProdName').value = nombre;
+        document.getElementById('movCantidad').value = '';
+        document.getElementById('movDetalle').value = '';
+        document.getElementById('movTitle').textContent = tipo === 'INGRESO' ? 'Registrar Ingreso' : 'Registrar Egreso';
+        const btn = document.getElementById('movSubmitBtn');
+        btn.style.backgroundColor = tipo === 'INGRESO' ? 'var(--success)' : 'var(--danger)';
+        document.getElementById('movModal').classList.add('active');
+    }
+
+    function closeMovModal() { document.getElementById('movModal').classList.remove('active'); }
+
+    async function saveMovimiento(e) {
+        e.preventDefault();
+        const invId = parseInt(document.getElementById('movInvId').value);
+        const tipo = document.getElementById('movTipo').value;
+        const cant = parseInt(document.getElementById('movCantidad').value);
+        const detalle = document.getElementById('movDetalle').value.trim();
+
+        try {
+            await FiNovaKardex.registrar(invId, tipo, cant, detalle);
+            showToast(tipo === 'INGRESO' ? 'Ingreso registrado correctamente' : 'Egreso registrado correctamente');
+            closeMovModal();
+            await refresh();
+        } catch (err) {
+            alert('Error: ' + err.message);
+        }
+    }
 
     async function editProduct(id) {
         var item = null;
@@ -219,6 +279,7 @@
         document.getElementById('fCantidad').value = item.cantidad || 0;
         document.getElementById('fCosto').value = item.costoUnitario || 0;
         document.getElementById('fMinimo').value = item.stockMinimo || 10;
+        document.getElementById('fCantidad').readOnly = true; // Bloqueado en edición para forzar uso de Kardex
         document.getElementById('productModal').classList.add('active');
     }
 

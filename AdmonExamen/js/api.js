@@ -248,6 +248,46 @@ const FinovaAPI = (function () {
         }
     };
 
+    /*
+     * Kardex (Ingresos y Egresos)
+     */
+    const kardex = {
+        async getAll(inventarioId, tipo) {
+            const params = new URLSearchParams();
+            if (inventarioId) params.set('inventarioId', inventarioId);
+            if (tipo && tipo !== 'Todos') params.set('tipo', tipo);
+            const q = params.toString();
+            const res = await get('/kardex' + (q ? '?' + q : ''));
+            return res.ok ? res.data : [];
+        },
+        async registrar(data) {
+            const res = await post('/kardex', data);
+            return res.ok ? { ok: true, data: res.data } : { ok: false, message: res.message };
+        }
+    };
+
+    /*
+     * Gestión de Usuarios
+     */
+    const usuarios = {
+        async getAll() {
+            const res = await get('/usuarios');
+            return res.ok ? res.data : [];
+        },
+        async create(data) {
+            const res = await post('/usuarios', data);
+            return res.ok ? { ok: true, data: res.data } : { ok: false, message: res.message };
+        },
+        async update(id, data) {
+            const res = await put('/usuarios/' + id, data);
+            return res.ok ? { ok: true, data: res.data } : { ok: false, message: res.message };
+        },
+        async toggleStatus(id) {
+            const res = await put('/usuarios/' + id + '/toggle');
+            return res.ok ? { ok: true, data: res.data } : { ok: false, message: res.message };
+        }
+    };
+
     // API publica
     return {
         getToken,
@@ -262,6 +302,8 @@ const FinovaAPI = (function () {
         costos,
         proyecciones,
         auditoria,
-        dashboard
+        dashboard,
+        kardex,
+        usuarios
     };
 })();
