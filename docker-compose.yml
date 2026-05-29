@@ -65,6 +65,18 @@ services:
     ports:
       - "${API_PORT:-5000}:8080"
     restart: unless-stopped
+  frontend:
+    build:
+      context: ./AdmonExamen
+      dockerfile: Dockerfile
+    container_name: finova-frontend
+    depends_on:
+      api:
+        condition: service_started
+    ports:
+      # Correccion: variable de entorno correcta para puerto del frontend.
+      - "${FRONTEND_PORT:-8080}:80"
+    restart: unless-stopped
 
 volumes:
   # Volumen nominal para datos persistentes de SQL Server.
