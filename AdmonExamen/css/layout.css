@@ -19,7 +19,8 @@
     left: 0;
     bottom: 0;
     z-index: 200;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Cambio: se agrega transición de ancho para evitar colapso brusco en desktop. */
+    transition: width 0.38s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow-y: auto;
     overflow-x: hidden;
 }
@@ -38,6 +39,8 @@
     height: 30px;
     width: auto;
     filter: drop-shadow(0 2px 6px rgba(0,0,0,0.2));
+    /* Cambio: anima reducción del logotipo al colapsar para una percepción más suave. */
+    transition: height 0.3s ease;
 }
 
 .sidebar-nav {
@@ -55,6 +58,10 @@
     letter-spacing: 0.1em;
     color: rgba(255,255,255,0.2);
     padding: 1rem 0.75rem 0.4rem;
+    /* Cambio: permitir transición de opacidad/altura en vez de ocultar de golpe. */
+    transition: opacity 0.24s ease, max-height 0.24s ease, margin 0.24s ease, padding 0.24s ease;
+    max-height: 2.2rem;
+    overflow: hidden;
 }
 
 .sidebar-link {
@@ -142,6 +149,9 @@
 .sidebar-user-info {
     flex: 1;
     min-width: 0;
+    /* Cambio: transición para ocultado progresivo de datos del usuario al colapsar. */
+    transition: opacity 0.2s ease, max-width 0.2s ease;
+    max-width: 140px;
 }
 
 .sidebar-user-name {
@@ -192,6 +202,8 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    /* Cambio: sincroniza desplazamiento del contenido con el colapso de la barra lateral. */
+    transition: margin-left 0.38s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 /* ---- TOP BAR ---- */
@@ -601,7 +613,14 @@ html[data-theme="dark"] .section-icon.rose {
 
 .app-layout.sidebar-collapsed .sidebar-section-label,
 .app-layout.sidebar-collapsed .sidebar-user-info {
-    display: none;
+    /* Cambio: sustituye display:none por transición para eliminar el efecto brusco. */
+    opacity: 0;
+    max-height: 0;
+    max-width: 0;
+    margin: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    pointer-events: none;
 }
 
 .app-layout.sidebar-collapsed .sidebar-link {

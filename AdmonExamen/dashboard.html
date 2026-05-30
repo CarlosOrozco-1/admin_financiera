@@ -73,7 +73,7 @@
         <div class="main-area">
             <header class="top-bar">
                 <div class="top-bar-left">
-                    <button class="mobile-menu-btn" onclick="toggleSidebar()">
+                    <button class="mobile-menu-btn always-visible" onclick="toggleSidebar()" title="Mostrar u ocultar menú lateral" style="display:inline-flex !important; visibility:visible; opacity:1;">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
                     </button>
                     <div class="page-title-bar">
@@ -226,8 +226,18 @@
     if (!FiNovaAuth.requireAuth()) { /* redirected */ }
 
     function toggleSidebar() {
-        document.getElementById('sidebar').classList.toggle('open');
-        document.getElementById('sidebarOverlay').classList.toggle('active');
+        const appLayout = document.querySelector('.app-layout');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+
+        // Ajuste: en desktop colapsa/expande sidebar; en móvil abre/cierra drawer con overlay.
+        if (window.innerWidth <= 900) {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+            return;
+        }
+
+        appLayout.classList.toggle('sidebar-collapsed');
     }
     function closeSidebar() {
         document.getElementById('sidebar').classList.remove('open');
