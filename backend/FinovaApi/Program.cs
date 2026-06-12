@@ -1,4 +1,6 @@
 using System.Text;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -7,9 +9,9 @@ using FinovaApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configurar Entity Framework Core con SQL Server
+// Configurar Entity Framework Core con SQLite
 builder.Services.AddDbContext<FinovaDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("FinovaDB")));
+    options.UseSqlite(builder.Configuration.GetConnectionString("FinovaDB")));
 
 // Configurar autenticacion JWT
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
@@ -62,14 +64,36 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<FinovaDbContext>();
+    DbInitializer.Initialize(context);
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
 
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+app.Lifetime.ApplicationStarted.Register(() =>
+{
+    try
+    {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            Process.Start(new ProcessStartInfo("http://localhost:5000/") { UseShellExecute = true });
+        }
+    }
+    catch { /* Ignore */ }
+});
 
 app.Run();

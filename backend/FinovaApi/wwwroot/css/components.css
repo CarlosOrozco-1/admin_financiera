@@ -1,0 +1,297 @@
+/* ============================================================
+   COMPONENTS
+   Cards, formularios, tablas, botones, badges
+   ============================================================ */
+
+/* ---- CARDS ---- */
+.card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-xs);
+    transition: var(--transition);
+}
+
+.card:hover {
+    box-shadow: var(--shadow-sm);
+}
+
+/* ---- FORM ELEMENTS ---- */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.form-group label {
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: var(--text-label);
+    letter-spacing: 0.02em;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.6rem 0.85rem;
+    background: var(--bg-input);
+    border: 1.5px solid transparent;
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.88rem;
+    font-weight: 500;
+    transition: var(--transition);
+    outline: none;
+}
+
+.form-group input::placeholder {
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+.form-group input:hover {
+    border-color: var(--border-input);
+}
+
+.form-group input:focus {
+    border-color: var(--border-input-focus);
+    background: var(--bg-input-focus);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* ---- TABLES ---- */
+.table-wrapper {
+    overflow-x: auto;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+thead {
+    background: var(--bg-footer-row);
+}
+
+thead th {
+    padding: 0.7rem 0.85rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+}
+
+tbody td {
+    padding: 0.6rem 0.85rem;
+    border-bottom: 1px solid #f0f1f5;
+    vertical-align: middle;
+}
+
+tbody tr:last-child td {
+    border-bottom: none;
+}
+
+table input {
+    width: 100%;
+    min-width: 75px;
+    padding: 0.45rem 0.65rem;
+    background: var(--bg-input);
+    border: 1.5px solid transparent;
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: var(--transition);
+    outline: none;
+}
+
+table input:hover {
+    border-color: var(--border-input);
+}
+
+table input:focus {
+    border-color: var(--border-input-focus);
+    background: var(--bg-input-focus);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.08);
+}
+
+table .total-cell {
+    font-weight: 700;
+    color: var(--accent);
+    font-size: 0.88rem;
+}
+
+.concepto-label {
+    font-weight: 550;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.85rem;
+}
+
+.concepto-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.dot-blue { background: #3b82f6; }
+.dot-green { background: #22a06b; }
+.dot-yellow { background: #e67e22; }
+
+/* ---- BUTTONS ---- */
+.btn-group {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    text-decoration: none;
+}
+
+.btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+.btn-primary {
+    background: var(--accent);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--accent-light);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-secondary {
+    background: var(--accent-bg);
+    color: var(--accent);
+}
+
+.btn-secondary:hover {
+    background: var(--accent-bg-hover);
+}
+
+.btn-danger {
+    background: var(--red-bg);
+    color: var(--red);
+}
+
+.btn-danger:hover {
+    background: #fde3e4;
+}
+
+.btn-success {
+    background: var(--green-bg);
+    color: var(--green);
+}
+
+.btn-success:hover {
+    background: #d5f0e3;
+}
+
+/* ---- VARIATION BADGE ---- */
+.variation-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.9rem;
+    border-radius: var(--radius-full);
+    font-size: 0.8rem;
+    font-weight: 650;
+    letter-spacing: 0.01em;
+}
+
+.variation-badge.favorable {
+    background: var(--green-bg);
+    color: var(--green);
+}
+
+.variation-badge.desfavorable {
+    background: var(--red-bg);
+    color: var(--red);
+}
+
+.variation-badge.neutral {
+    background: var(--yellow-bg);
+    color: var(--yellow);
+}
+
+.variation-badge svg {
+    width: 15px;
+    height: 15px;
+}
+
+/* ---- TOAST ---- */
+.toast {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 0.8rem 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    box-shadow: var(--shadow-lg);
+    z-index: 1000;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: var(--transition);
+}
+
+.toast.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.toast-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: var(--green-bg);
+    color: var(--green);
+}
+
+.toast-text {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
