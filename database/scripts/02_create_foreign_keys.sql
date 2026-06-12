@@ -156,3 +156,5 @@ PRINT '========================================';
 PRINT '✅ Todas las llaves foraneas e indices creados correctamente';
 PRINT '========================================';
 GO
+
+

@@ -51,3 +51,5 @@ BEGIN
     PRINT '✅ IX_Kardex_InventarioId creado';
 END
 GO
+
+

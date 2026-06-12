@@ -15,3 +15,5 @@ GO
 
 PRINT '✅ Columna Token actualizada a NVARCHAR(500)';
 GO
+
+

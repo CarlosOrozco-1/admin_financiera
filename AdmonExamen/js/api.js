@@ -148,7 +148,7 @@ const FinovaAPI = (function () {
     }
     clearToken();
     sessionStorage.removeItem(SESSION_KEY);
-    window.location.href = "login.html";
+    window.location.href = "index.html";
   }
 
   async function getProfile() {
@@ -329,6 +329,29 @@ const FinovaAPI = (function () {
     },
   };
 
+  /*
+   * Health Check — Verifica el estado de la API y la base de datos
+   */
+  async function healthCheck() {
+    try {
+      const res = await request("GET", "/health", null, false);
+      return {
+        ok: res.ok,
+        apiStatus: res.data?.status || "unknown",
+        dbStatus: res.data?.database || "unknown",
+        timestamp: res.data?.timestamp || null
+      };
+    } catch (err) {
+      return {
+        ok: false,
+        apiStatus: "offline",
+        dbStatus: "unknown",
+        timestamp: null,
+        error: err.message
+      };
+    }
+  }
+
   // API publica
   return {
     getToken,
@@ -349,5 +372,6 @@ const FinovaAPI = (function () {
     dashboard,
     kardex,
     usuarios,
+    healthCheck,
   };
 })();

@@ -170,3 +170,5 @@ GO
 
 PRINT '✅ Tablas creadas correctamente en FinovaDB';
 GO
+
+

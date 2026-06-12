@@ -123,11 +123,10 @@ const FiNovaAuth = (function () {
             }
             if (typeof FinovaAPI !== 'undefined') {
                 await FinovaAPI.logout();
-                return;
             }
         }
         sessionStorage.removeItem(SESSION_KEY);
-        window.location.href = 'login.html';
+        window.location.href = 'index.html';
     }
 
     return {

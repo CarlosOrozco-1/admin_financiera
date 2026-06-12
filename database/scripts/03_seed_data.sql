@@ -51,3 +51,5 @@ PRINT '========================================';
 PRINT '✅ Base de datos FinovaDB inicializada correctamente';
 PRINT '========================================';
 GO
+
+

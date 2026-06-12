@@ -36,3 +36,5 @@ GO
 ALTER TABLE Sesiones ALTER COLUMN Token NVARCHAR(MAX) NOT NULL;
 PRINT '✅ Columna Token actualizada a NVARCHAR(MAX).';
 GO
+
+
