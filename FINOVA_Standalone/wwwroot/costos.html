@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="FINOVA — Módulo de Costos Predeterminados. Cálculo de costos estándar, reales y variaciones.">
+    <title>Costos Predeterminados | FINOVA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/results.css">
+    <link rel="stylesheet" href="css/print.css">
+    <link rel="stylesheet" href="css/inventory.css">
+    <!-- CDN libs -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <!-- Core -->
+    <script src="js/api.js"></script>
+    <script src="js/database.js"></script>
+    <script src="js/audit.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/theme.js"></script>
+</head>
+<body>
+    <div class="app-layout">
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <img src="FINOVA-LOGO/Logotipo-Dark.png" alt="FINOVA" class="sidebar-logo">
+            </div>
+                        <nav class="sidebar-nav">
+                <span class="sidebar-section-label">Principal</span>
+                <a href="dashboard.html" class="sidebar-link">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    Dashboard
+                </a>
+                <a href="costos.html" class="sidebar-link active">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
+                    Costos
+                </a>
+
+                <span class="sidebar-section-label">Inventarios</span>
+                <a href="inventario.html" class="sidebar-link">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                    Inventario
+                </a>
+                <a href="kardex.html" class="sidebar-link">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 22h14a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v4"/><polyline points="14 2 14 8 20 8"/><path d="M2 15h10"/><path d="M9 18l3-3-3-3"/></svg>
+                    Kardex
+                </a>
+                <a href="proyeccion.html" class="sidebar-link">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                    Proyección
+                </a>
+
+                <span class="sidebar-section-label">Sistema</span>
+                <a href="auditoria.html" class="sidebar-link">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    Auditoría
+                </a>
+                <a href="usuarios.html" class="sidebar-link">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    Usuarios
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <div class="sidebar-avatar" id="sidebarAvatar">A</div>
+                    <div class="sidebar-user-info">
+                        <div class="sidebar-user-name" id="sidebarUserName">Admin</div>
+                        <div class="sidebar-user-role" id="sidebarUserRole">admin</div>
+                    </div>
+                </div>
+                <button class="sidebar-logout" onclick="FiNovaAuth.logout()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    Cerrar sesión
+                </button>
+            </div>
+        </aside>
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+        <div class="main-area">
+            <header class="top-bar">
+                <div class="top-bar-left">
+                    <button class="mobile-menu-btn always-visible" onclick="toggleSidebar()" title="Mostrar u ocultar menú lateral" style="display:inline-flex !important; visibility:visible; opacity:1;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                    </button>
+                    <div class="page-title-bar">
+                        <h1 class="page-title">Costos Predeterminados</h1>
+                        <span class="page-breadcrumb">FINOVA / Costos</span>
+                    </div>
+                </div>
+                <div class="top-bar-right">
+                    <div class="theme-switcher">
+                        <button class="theme-btn" id="btn-toggle-dark" onclick="toggleClaroOscuro()" title="Alternar tema">
+                            <svg id="theme-icon-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                            <span id="theme-text-toggle">Tema</span>
+                        </button>
+                        <button class="theme-btn" id="btn-toggle-brisa" onclick="toggleBrisa()" title="Paleta Brisa">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 11.5 22 9 18 9C17 9 16.5 9.5 15.5 9.5C14.5 9.5 13.5 8.5 13.5 7.5C13.5 6.5 14 6 14 5C14 2 11.5 2 9.5 2C4.5 2 2 6 2 11C2 17 6.5 22 12 22Z"/><circle cx="7.5" cy="10.5" r="1" fill="currentColor"/><circle cx="11.5" cy="7.5" r="1" fill="currentColor"/><circle cx="16.5" cy="11.5" r="1" fill="currentColor"/></svg>
+                            Brisa
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <main class="page-container">
+                <!-- SECCIÓN 1: DATOS DEL PRODUCTO -->
+                <section class="section" id="producto">
+                    <div class="section-header">
+                        <div class="section-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>
+                        <div>
+                            <h2 class="section-title">1. Datos del Producto</h2>
+                            <p class="section-subtitle">Información general del producto a costear</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="form-grid">
+                            <div class="form-group"><label for="nombreProducto">Nombre del producto</label><input type="text" id="nombreProducto" placeholder="Ej: Camisa deportiva" oninput="calcularTodo()"></div>
+                            <div class="form-group"><label for="codigoProducto">Código</label><input type="text" id="codigoProducto" placeholder="Ej: CAM-001" oninput="calcularTodo()"></div>
+                            <div class="form-group"><label for="cantidadProducida">Cantidad producida</label><input type="number" id="cantidadProducida" placeholder="Ej: 500" min="0" step="1" oninput="calcularTodo()"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECCIÓN 2: COSTO ESTÁNDAR -->
+                <section class="section" id="estandar">
+                    <div class="section-header">
+                        <div class="section-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg></div>
+                        <div>
+                            <h2 class="section-title">2. Costo Estándar</h2>
+                            <p class="section-subtitle">Lo que la empresa esperaba gastar</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="table-wrapper">
+                            <table id="tablaEstandar">
+                                <thead><tr><th>Concepto</th><th>Cantidad</th><th>Precio (Q)</th><th>Total (Q)</th></tr></thead>
+                                <tbody>
+                                    <tr><td><span class="concepto-label"><span class="concepto-dot dot-blue"></span>Materia Prima</span></td><td><input type="number" id="mpCantEst" placeholder="0" min="0" step="any" oninput="calcularTodo()"></td><td><input type="number" id="mpPrecioEst" placeholder="0.00" min="0" step="any" oninput="calcularTodo()"></td><td><span class="total-cell" id="mpTotalEst">Q 0.00</span></td></tr>
+                                    <tr><td><span class="concepto-label"><span class="concepto-dot dot-green"></span>Mano de Obra</span></td><td><input type="number" id="moCantEst" placeholder="0" min="0" step="any" oninput="calcularTodo()"></td><td><input type="number" id="moPrecioEst" placeholder="0.00" min="0" step="any" oninput="calcularTodo()"></td><td><span class="total-cell" id="moTotalEst">Q 0.00</span></td></tr>
+                                    <tr><td><span class="concepto-label"><span class="concepto-dot dot-yellow"></span>Costos Indirectos</span></td><td><input type="number" id="ciCantEst" placeholder="0" min="0" step="any" oninput="calcularTodo()"></td><td><input type="number" id="ciPrecioEst" placeholder="0.00" min="0" step="any" oninput="calcularTodo()"></td><td><span class="total-cell" id="ciTotalEst">Q 0.00</span></td></tr>
+                                </tbody>
+                                <tfoot><tr style="background: var(--bg-footer-row);"><td colspan="3" style="text-align: right; font-weight: 600; color: var(--text-muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; padding-right: 1rem;">Total Estándar</td><td><span class="total-cell" id="totalEstandar" style="font-size: 1rem;">Q 0.00</span></td></tr></tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECCIÓN 3: COSTO REAL -->
+                <section class="section" id="real">
+                    <div class="section-header">
+                        <div class="section-icon orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+                        <div>
+                            <h2 class="section-title">3. Costo Real</h2>
+                            <p class="section-subtitle">Lo que realmente se gastó en producción</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="table-wrapper">
+                            <table id="tablaReal">
+                                <thead><tr><th>Concepto</th><th>Cantidad</th><th>Precio (Q)</th><th>Total (Q)</th></tr></thead>
+                                <tbody>
+                                    <tr><td><span class="concepto-label"><span class="concepto-dot dot-blue"></span>Materia Prima</span></td><td><input type="number" id="mpCantReal" placeholder="0" min="0" step="any" oninput="calcularTodo()"></td><td><input type="number" id="mpPrecioReal" placeholder="0.00" min="0" step="any" oninput="calcularTodo()"></td><td><span class="total-cell" id="mpTotalReal">Q 0.00</span></td></tr>
+                                    <tr><td><span class="concepto-label"><span class="concepto-dot dot-green"></span>Mano de Obra</span></td><td><input type="number" id="moCantReal" placeholder="0" min="0" step="any" oninput="calcularTodo()"></td><td><input type="number" id="moPrecioReal" placeholder="0.00" min="0" step="any" oninput="calcularTodo()"></td><td><span class="total-cell" id="moTotalReal">Q 0.00</span></td></tr>
+                                    <tr><td><span class="concepto-label"><span class="concepto-dot dot-yellow"></span>Costos Indirectos</span></td><td><input type="number" id="ciCantReal" placeholder="0" min="0" step="any" oninput="calcularTodo()"></td><td><input type="number" id="ciPrecioReal" placeholder="0.00" min="0" step="any" oninput="calcularTodo()"></td><td><span class="total-cell" id="ciTotalReal">Q 0.00</span></td></tr>
+                                </tbody>
+                                <tfoot><tr style="background: var(--bg-footer-row);"><td colspan="3" style="text-align: right; font-weight: 600; color: var(--text-muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; padding-right: 1rem;">Total Real</td><td><span class="total-cell" id="totalReal" style="font-size: 1rem; color: #e67e22;">Q 0.00</span></td></tr></tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECCIÓN 4: RESULTADOS -->
+                <section class="section" id="resultados">
+                    <div class="section-header">
+                        <div class="section-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+                        <div>
+                            <h2 class="section-title">4. Cálculos Automáticos</h2>
+                            <p class="section-subtitle">Resultados calculados en tiempo real</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="results-grid">
+                            <div class="result-card standard"><div class="result-label">Costo Estándar</div><div class="result-value purple" id="resEstandar">Q 0.00</div></div>
+                            <div class="result-card real"><div class="result-label">Costo Real</div><div class="result-value blue" id="resReal">Q 0.00</div></div>
+                            <div class="result-card variation"><div class="result-label">Variación</div><div class="result-value yellow" id="resVariacion">Q 0.00</div></div>
+                            <div class="result-card status"><div class="result-label">Resultado</div><div id="resStatus"><span class="variation-badge neutral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg> Sin datos</span></div></div>
+                        </div>
+                        <div class="table-wrapper">
+                            <table id="tablaVariaciones">
+                                <thead><tr><th>Concepto</th><th>Estándar (Q)</th><th>Real (Q)</th><th>Variación (Q)</th><th>Resultado</th></tr></thead>
+                                <tbody>
+                                    <tr><td><span class="concepto-label"><span class="concepto-dot dot-blue"></span>Materia Prima</span></td><td id="varMpEst">Q 0.00</td><td id="varMpReal">Q 0.00</td><td id="varMpDiff" class="total-cell">Q 0.00</td><td id="varMpStatus">—</td></tr>
+                                    <tr><td><span class="concepto-label"><span class="concepto-dot dot-green"></span>Mano de Obra</span></td><td id="varMoEst">Q 0.00</td><td id="varMoReal">Q 0.00</td><td id="varMoDiff" class="total-cell">Q 0.00</td><td id="varMoStatus">—</td></tr>
+                                    <tr><td><span class="concepto-label"><span class="concepto-dot dot-yellow"></span>Costos Indirectos</span></td><td id="varCiEst">Q 0.00</td><td id="varCiReal">Q 0.00</td><td id="varCiDiff" class="total-cell">Q 0.00</td><td id="varCiStatus">—</td></tr>
+                                </tbody>
+                                <tfoot><tr style="background: var(--bg-footer-row);"><td style="font-weight: 600; color: var(--text-muted); font-size: 0.78rem; text-transform: uppercase;">Totales</td><td id="varTotalEst" style="font-weight: 650;">Q 0.00</td><td id="varTotalReal" style="font-weight: 650;">Q 0.00</td><td id="varTotalDiff" class="total-cell" style="font-size: 0.95rem;">Q 0.00</td><td id="varTotalStatus" style="font-weight: 650;">—</td></tr></tfoot>
+                            </table>
+                        </div>
+                        <div class="report-section" style="margin-top: 1rem;">
+                            <div class="report-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Costo por unidad producida</div>
+                            <div class="results-grid" style="margin-bottom: 0;">
+                                <div class="result-card standard" style="padding: 0.8rem;"><div class="result-label">Estándar / Unidad</div><div class="result-value purple" id="costoUnitEst" style="font-size: 1.15rem;">Q 0.00</div></div>
+                                <div class="result-card real" style="padding: 0.8rem;"><div class="result-label">Real / Unidad</div><div class="result-value blue" id="costoUnitReal" style="font-size: 1.15rem;">Q 0.00</div></div>
+                                <div class="result-card variation" style="padding: 0.8rem;"><div class="result-label">Variación / Unidad</div><div class="result-value yellow" id="costoUnitVar" style="font-size: 1.15rem;">Q 0.00</div></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECCIÓN 5: INFORME -->
+                <section class="section" id="informe">
+                    <div class="section-header">
+                        <div class="section-icon rose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg></div>
+                        <div>
+                            <h2 class="section-title">5. Informe Final</h2>
+                            <p class="section-subtitle">Resumen ejecutivo de resultados</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="table-wrapper">
+                            <table class="report-table" id="tablaResumen">
+                                <thead><tr><th>Descripción</th><th style="text-align: right;">Valor</th></tr></thead>
+                                <tbody>
+                                    <tr><td>Producto</td><td id="infProducto" style="text-align: right; font-weight: 600;">—</td></tr>
+                                    <tr><td>Código</td><td id="infCodigo" style="text-align: right; font-weight: 600;">—</td></tr>
+                                    <tr><td>Cantidad producida</td><td id="infCantidad" style="text-align: right; font-weight: 600;">—</td></tr>
+                                    <tr><td>Costo estándar total</td><td id="infEstandar" style="text-align: right; font-weight: 700; color: var(--accent);">Q 0.00</td></tr>
+                                    <tr><td>Costo real total</td><td id="infReal" style="text-align: right; font-weight: 700; color: #3b82f6;">Q 0.00</td></tr>
+                                    <tr><td>Variación total</td><td id="infVariacion" style="text-align: right; font-weight: 700;">Q 0.00</td></tr>
+                                    <tr><td>Resultado</td><td id="infResultado" style="text-align: right; font-weight: 700;">—</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="report-section">
+                            <div class="report-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Análisis del costo</div>
+                            <div class="report-text" id="analisisTexto"><p style="color: var(--text-muted); font-style: italic;">Ingrese los datos para generar el análisis automático.</p></div>
+                        </div>
+                        <!-- Botones -->
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="descargarPDF()" id="btnPDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Descargar PDF</button>
+                            <button class="btn btn-secondary" onclick="exportarExcel()" id="btnExcel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Exportar Excel</button>
+                            <label class="btn btn-secondary" style="cursor:pointer;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Importar Excel<input type="file" accept=".xlsx,.xls" onchange="importarExcel(event)" style="display:none;"></label>
+                            <button class="btn btn-success" onclick="guardarRegistro()" id="btnGuardar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Guardar en BD</button>
+                            <button class="btn btn-success" onclick="cargarEjemplo()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Cargar ejemplo</button>
+                            <button class="btn btn-danger" onclick="limpiarTodo()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>Limpiar todo</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECCIÓN 6: REGISTROS GUARDADOS -->
+                <section class="section" id="registros">
+                    <div class="section-header">
+                        <div class="section-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></div>
+                        <div>
+                            <h2 class="section-title">6. Registros Guardados</h2>
+                            <p class="section-subtitle">Costos previamente guardados en la base de datos</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="module-toolbar" style="margin-bottom:0.75rem;">
+                            <button class="btn btn-primary" onclick="cargarRegistros()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Actualizar lista</button>
+                        </div>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead><tr><th>ID</th><th>Producto</th><th>Código</th><th>Total Est.</th><th>Total Real</th><th>Variación</th><th>Resultado</th><th>Fecha</th><th>Acciones</th></tr></thead>
+                                <tbody id="costosBody"><tr><td colspan="9"><div class="empty-state"><p>Cargando registros guardados...</p></div></td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- EXPLICACIÓN -->
+                <div class="explanation-card">
+                    <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>¿Cómo se realizan los cálculos?</h4>
+                    <ul>
+                        <li><strong>Total por concepto:</strong> Cantidad × Precio para cada elemento.</li>
+                        <li><strong>Costo total estándar:</strong> Suma de MP + MO + CI estándar.</li>
+                        <li><strong>Costo total real:</strong> Suma de MP + MO + CI real.</li>
+                        <li><strong>Variación:</strong> Costo Real − Costo Estándar.</li>
+                        <li><strong>Favorable ✓:</strong> Costo real menor al estándar (se ahorró).</li>
+                        <li><strong>Desfavorable ✗:</strong> Costo real mayor al estándar (se gastó de más).</li>
+                        <li><strong>Costo unitario:</strong> Costo Total ÷ Cantidad Producida.</li>
+                    </ul>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast"><div class="toast-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><polyline points="20 6 9 17 4 12"/></svg></div><span class="toast-text" id="toastText"></span></div>
+
+    <!-- Scripts -->
+    <script src="js/utils.js"></script>
+    <script src="js/calculations.js"></script>
+    <script src="js/analysis.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/excel-handler.js"></script>
+    <script src="js/import-preview.js"></script>
+    <script src="js/pdf-export.js"></script>
+    <script>
+    // Auth
+    if (!FiNovaAuth.requireAuth()) { /* redirected */ }
+
+    function toggleSidebar() {
+        const appLayout = document.querySelector('.app-layout');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        if (window.innerWidth <= 900) {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+            return;
+        }
+        if (appLayout) appLayout.classList.toggle('sidebar-collapsed');
+    }
+    function closeSidebar() {
+        document.getElementById('sidebar').classList.remove('open');
+        document.getElementById('sidebarOverlay').classList.remove('active');
+    }
+
+    // ---- CORE COST FUNCTIONS ----
+    function calcularTodo() {
+        const estandar = calcularCostosEstandar();
+        actualizarTablaEstandar(estandar);
+        const real = calcularCostosReales();
+        actualizarTablaReal(real);
+        const variaciones = calcularVariaciones(estandar, real);
+        const variacion = variaciones.variacionTotal;
+        actualizarTarjetasResultados(estandar.total, real.total, variacion);
+        actualizarTablaVariaciones(estandar, real, variaciones);
+        const cantProd = getVal('cantidadProducida');
+        const unitarios = calcularCostosUnitarios(estandar.total, real.total, variacion, cantProd);
+        actualizarCostosUnitarios(unitarios);
+        const nombre = document.getElementById('nombreProducto').value;
+        const codigo = document.getElementById('codigoProducto').value;
+        actualizarInformeFinal(nombre, codigo, cantProd, estandar.total, real.total, variacion);
+        generarAnalisis(nombre, codigo, cantProd, estandar.total, real.total, variacion, estandar.mp, real.mp, estandar.mo, real.mo, estandar.ci, real.ci);
+    }
+
+    function cargarEjemplo() {
+        document.getElementById('nombreProducto').value = 'Camisa Deportiva';
+        document.getElementById('codigoProducto').value = 'CAM-001';
+        document.getElementById('cantidadProducida').value = '500';
+        document.getElementById('mpCantEst').value = '10'; document.getElementById('mpPrecioEst').value = '5.00';
+        document.getElementById('moCantEst').value = '8'; document.getElementById('moPrecioEst').value = '12.50';
+        document.getElementById('ciCantEst').value = '5'; document.getElementById('ciPrecioEst').value = '8.00';
+        document.getElementById('mpCantReal').value = '12'; document.getElementById('mpPrecioReal').value = '6.00';
+        document.getElementById('moCantReal').value = '9'; document.getElementById('moPrecioReal').value = '13.00';
+        document.getElementById('ciCantReal').value = '6'; document.getElementById('ciPrecioReal').value = '9.50';
+        calcularTodo();
+        showToast('Datos de ejemplo cargados correctamente');
+    }
+
+    function limpiarTodo() {
+        document.querySelectorAll('input[type="number"], input[type="text"]').forEach(i => i.value = '');
+        calcularTodo();
+        showToast('Formulario limpiado');
+    }
+
+    // ---- EXPORT/IMPORT ----
+    function descargarPDF() {
+        const est = calcularCostosEstandar();
+        const re = calcularCostosReales();
+        const v = re.total - est.total;
+        let resultado = '—';
+        if (v < 0) resultado = '✓ FAVORABLE';
+        else if (v > 0) resultado = '✗ DESFAVORABLE';
+        else if (est.total > 0 || re.total > 0) resultado = '= SIN VARIACIÓN';
+
+        const analisisEl = document.getElementById('analisisTexto');
+        const analisisText = analisisEl ? analisisEl.textContent : '';
+
+        FiNovaPDF.exportCostos({
+            producto: document.getElementById('nombreProducto').value,
+            codigo: document.getElementById('codigoProducto').value,
+            cantidad: document.getElementById('cantidadProducida').value,
+            mpCantEst: getVal('mpCantEst'), mpPrecioEst: formatQ(getVal('mpPrecioEst')),
+            mpTotalEst: formatQ(est.mp), mpTotalReal: formatQ(re.mp), mpVar: formatQ(Math.abs(re.mp - est.mp)),
+            moCantEst: getVal('moCantEst'), moPrecioEst: formatQ(getVal('moPrecioEst')),
+            moTotalEst: formatQ(est.mo), moTotalReal: formatQ(re.mo), moVar: formatQ(Math.abs(re.mo - est.mo)),
+            ciCantEst: getVal('ciCantEst'), ciPrecioEst: formatQ(getVal('ciPrecioEst')),
+            ciTotalEst: formatQ(est.ci), ciTotalReal: formatQ(re.ci), ciVar: formatQ(Math.abs(re.ci - est.ci)),
+            totalEst: formatQ(est.total), totalReal: formatQ(re.total), totalVar: formatQ(Math.abs(v)),
+            resultado: resultado,
+            analisis: analisisText
+        });
+        FiNovaAudit.log('Costos', 'Exportar PDF', `Producto: ${document.getElementById('nombreProducto').value}`);
+        showToast('PDF generado correctamente');
+    }
+
+    function exportarExcel() {
+        const est = calcularCostosEstandar();
+        const re = calcularCostosReales();
+        const data = [
+            ['INFORME DE COSTOS PREDETERMINADOS - FINOVA'],
+            [],
+            ['Producto', document.getElementById('nombreProducto').value],
+            ['Código', document.getElementById('codigoProducto').value],
+            ['Cantidad Producida', getVal('cantidadProducida')],
+            [],
+            ['Concepto', 'Cant. Estándar', 'Precio Estándar', 'Total Estándar', 'Cant. Real', 'Precio Real', 'Total Real', 'Variación'],
+            ['Materia Prima', getVal('mpCantEst'), getVal('mpPrecioEst'), est.mp, getVal('mpCantReal'), getVal('mpPrecioReal'), re.mp, re.mp - est.mp],
+            ['Mano de Obra', getVal('moCantEst'), getVal('moPrecioEst'), est.mo, getVal('moCantReal'), getVal('moPrecioReal'), re.mo, re.mo - est.mo],
+            ['Costos Indirectos', getVal('ciCantEst'), getVal('ciPrecioEst'), est.ci, getVal('ciCantReal'), getVal('ciPrecioReal'), re.ci, re.ci - est.ci],
+            ['TOTAL', '', '', est.total, '', '', re.total, re.total - est.total],
+        ];
+        FiNovaExcel.exportToExcel(data, 'FINOVA_Costos_' + (document.getElementById('nombreProducto').value || 'Informe'), 'Costos');
+        FiNovaAudit.log('Costos', 'Exportar Excel', `Producto: ${document.getElementById('nombreProducto').value}`);
+        showToast('Excel exportado correctamente');
+    }
+
+    function importarExcel(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        FiNovaExcel.importFile(file, function(err, data) {
+            if (err) { showToast('Error al leer el archivo'); return; }
+            const mapped = FiNovaExcel.mapToCostos(data);
+            if (!mapped) {
+                showToast('No se pudieron mapear los datos del archivo');
+                return;
+            }
+            FiNovaImportPreview.show({
+                module: 'costos',
+                data: [mapped],
+                validation: { valid: [mapped], errors: [], summary: '1 registro de costos detectado' },
+                fileName: file.name,
+                onConfirm: function(costosData) {
+                    var item = Array.isArray(costosData) ? costosData[0] : costosData;
+                    if (item.producto) document.getElementById('nombreProducto').value = item.producto;
+                    if (item.codigo) document.getElementById('codigoProducto').value = item.codigo;
+                    if (item.cantidad) document.getElementById('cantidadProducida').value = item.cantidad;
+                    document.getElementById('mpCantEst').value = item.estandar.mpCant || '';
+                    document.getElementById('mpPrecioEst').value = item.estandar.mpPrecio || '';
+                    document.getElementById('moCantEst').value = item.estandar.moCant || '';
+                    document.getElementById('moPrecioEst').value = item.estandar.moPrecio || '';
+                    document.getElementById('ciCantEst').value = item.estandar.ciCant || '';
+                    document.getElementById('ciPrecioEst').value = item.estandar.ciPrecio || '';
+                    document.getElementById('mpCantReal').value = item.real.mpCant || '';
+                    document.getElementById('mpPrecioReal').value = item.real.mpPrecio || '';
+                    document.getElementById('moCantReal').value = item.real.moCant || '';
+                    document.getElementById('moPrecioReal').value = item.real.moPrecio || '';
+                    document.getElementById('ciCantReal').value = item.real.ciCant || '';
+                    document.getElementById('ciPrecioReal').value = item.real.ciPrecio || '';
+                    calcularTodo();
+                    FiNovaAudit.log('Costos', 'Importar Excel', 'Archivo: ' + file.name);
+                    showToast('Datos de costos importados desde Excel');
+                }
+            });
+        });
+        event.target.value = '';
+    }
+
+    async function guardarRegistro() {
+        const est = calcularCostosEstandar();
+        const re = calcularCostosReales();
+        const v = re.total - est.total;
+        /*
+         * Guardar en la API REST si esta disponible, sino en localStorage.
+         */
+        if (typeof FinovaAPI !== 'undefined') {
+            const payload = {
+                codigo: document.getElementById('codigoProducto').value,
+                producto: document.getElementById('nombreProducto').value,
+                cantidad: parseInt(document.getElementById('cantidadProducida').value) || 0,
+                tipoCosto: 'Predeterminado',
+                mpCantEst: getVal('mpCantEst'), mpPrecioEst: getVal('mpPrecioEst'),
+                mpCantReal: getVal('mpCantReal'), mpPrecioReal: getVal('mpPrecioReal'),
+                moCantEst: getVal('moCantEst'), moPrecioEst: getVal('moPrecioEst'),
+                moCantReal: getVal('moCantReal'), moPrecioReal: getVal('moPrecioReal'),
+                ciCantEst: getVal('ciCantEst'), ciPrecioEst: getVal('ciPrecioEst'),
+                ciCantReal: getVal('ciCantReal'), ciPrecioReal: getVal('ciPrecioReal')
+            };
+            const result = await FinovaAPI.costos.create(payload);
+            if (result.ok) {
+                FiNovaAudit.log('Costos', 'Guardar en BD', 'Producto: ' + document.getElementById('nombreProducto').value);
+                showToast('Registro guardado en base de datos via API');
+                await cargarRegistros();
+            } else {
+                showToast('Error: ' + result.message);
+            }
+        } else {
+            FiNovaDB.save(FiNovaDB.COLLECTIONS.COSTOS, {
+                producto: document.getElementById('nombreProducto').value,
+                codigo: document.getElementById('codigoProducto').value,
+                cantidad: getVal('cantidadProducida'),
+                estandar: est, real: re, variacion: v,
+                resultado: v < 0 ? 'Favorable' : v > 0 ? 'Desfavorable' : 'Sin variaci\u00f3n'
+            });
+            FiNovaAudit.log('Costos', 'Guardar en BD', 'Producto: ' + document.getElementById('nombreProducto').value);
+            showToast('Registro guardado en base de datos');
+            await cargarRegistros();
+        }
+    }
+
+    // ---- REGISTROS GUARDADOS ----
+    async function cargarRegistros() {
+        const body = document.getElementById('costosBody');
+        var records = [];
+        try {
+            if (typeof FinovaAPI !== 'undefined') {
+                records = await FinovaAPI.costos.getAll();
+            } else {
+                records = FiNovaDB.getAll(FiNovaDB.COLLECTIONS.COSTOS);
+            }
+        } catch (e) {
+            console.error('Error al cargar registros de costos:', e);
+        }
+        if (!records || records.length === 0) {
+            body.innerHTML = '<tr><td colspan="9"><div class="empty-state"><p>No hay registros guardados</p></div></td></tr>';
+            return;
+        }
+        body.innerHTML = records.map(function(r) {
+            var totalEst = r.totalEst || (r.estandar ? (r.estandar.mp + r.estandar.mo + r.estandar.ci) : 0);
+            var totalReal = r.totalReal || (r.real ? (r.real.mp + r.real.mo + r.real.ci) : 0);
+            var variacion = r.variacion !== undefined ? r.variacion : (totalReal - totalEst);
+            var resultado = r.resultado || (variacion < 0 ? 'Favorable' : variacion > 0 ? 'Desfavorable' : 'Sin variacion');
+            var fecha = r.fecha || r.createdAt || '';
+            var fechaStr = fecha ? new Date(fecha).toLocaleDateString('es-GT', {day:'2-digit',month:'2-digit',year:'numeric'}) : '—';
+            return '<tr>' +
+                '<td style="font-weight:600;color:var(--accent);">' + (r.id || '—') + '</td>' +
+                '<td style="font-weight:550;">' + (r.producto || '—') + '</td>' +
+                '<td>' + (r.codigo || '—') + '</td>' +
+                '<td>Q ' + Number(totalEst).toLocaleString('es-GT', {minimumFractionDigits:2}) + '</td>' +
+                '<td>Q ' + Number(totalReal).toLocaleString('es-GT', {minimumFractionDigits:2}) + '</td>' +
+                '<td class="' + (variacion < 0 ? 'diff-positive' : variacion > 0 ? 'diff-negative' : '') + '">Q ' + Number(variacion).toLocaleString('es-GT', {minimumFractionDigits:2}) + '</td>' +
+                '<td>' + resultado + '</td>' +
+                '<td style="font-size:0.78rem;">' + fechaStr + '</td>' +
+                '<td><div class="table-actions">' +
+                    '<button class="table-action-btn" onclick="cargarCosto(' + r.id + ')" title="Cargar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg></button>' +
+                    '<button class="table-action-btn delete" onclick="eliminarCosto(' + r.id + ')" title="Eliminar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>' +
+                '</div></td></tr>';
+        }).join('');
+    }
+
+    async function cargarCosto(id) {
+        var item = null;
+        try {
+            if (typeof FinovaAPI !== 'undefined') {
+                item = await FinovaAPI.costos.getById(id);
+            } else {
+                item = FiNovaDB.getById(FiNovaDB.COLLECTIONS.COSTOS, id);
+            }
+        } catch (e) {
+            console.error('Error al cargar costo:', e);
+        }
+        if (!item) { showToast('No se encontro el registro'); return; }
+        document.getElementById('nombreProducto').value = item.producto || '';
+        document.getElementById('codigoProducto').value = item.codigo || '';
+        document.getElementById('cantidadProducida').value = item.cantidad || '';
+        document.getElementById('mpCantEst').value = item.mpCantEst || (item.estandar ? item.estandar.mpCant : '');
+        document.getElementById('mpPrecioEst').value = item.mpPrecioEst || (item.estandar ? item.estandar.mpPrecio : '');
+        document.getElementById('moCantEst').value = item.moCantEst || (item.estandar ? item.estandar.moCant : '');
+        document.getElementById('moPrecioEst').value = item.moPrecioEst || (item.estandar ? item.estandar.moPrecio : '');
+        document.getElementById('ciCantEst').value = item.ciCantEst || (item.estandar ? item.estandar.ciCant : '');
+        document.getElementById('ciPrecioEst').value = item.ciPrecioEst || (item.estandar ? item.estandar.ciPrecio : '');
+        document.getElementById('mpCantReal').value = item.mpCantReal || (item.real ? item.real.mpCant : '');
+        document.getElementById('mpPrecioReal').value = item.mpPrecioReal || (item.real ? item.real.mpPrecio : '');
+        document.getElementById('moCantReal').value = item.moCantReal || (item.real ? item.real.moCant : '');
+        document.getElementById('moPrecioReal').value = item.moPrecioReal || (item.real ? item.real.moPrecio : '');
+        document.getElementById('ciCantReal').value = item.ciCantReal || (item.real ? item.real.ciCant : '');
+        document.getElementById('ciPrecioReal').value = item.ciPrecioReal || (item.real ? item.real.ciPrecio : '');
+        calcularTodo();
+        // Desplazar al formulario
+        document.getElementById('producto').scrollIntoView({ behavior: 'smooth' });
+        showToast('Registro cargado en el formulario');
+    }
+
+    async function eliminarCosto(id) {
+        if (!confirm('\u00bfEst\u00e1 seguro de eliminar este registro de costos?')) return;
+        try {
+            if (typeof FinovaAPI !== 'undefined') {
+                await FinovaAPI.costos.remove(id);
+            } else {
+                FiNovaDB.remove(FiNovaDB.COLLECTIONS.COSTOS, id);
+            }
+            FiNovaAudit.log('Costos', 'Eliminar', 'Registro ID: ' + id);
+            showToast('Registro eliminado');
+            await cargarRegistros();
+        } catch (e) {
+            console.error('Error al eliminar costo:', e);
+            showToast('Error al eliminar el registro');
+        }
+    }
+
+    // ---- PERSISTENCIA DEL FORMULARIO ----
+    var FORM_KEY = 'finova_costos_form';
+
+    // Guardar formulario en sessionStorage al escribir
+    document.addEventListener('input', function() {
+        guardarFormStorage();
+    });
+
+    function guardarFormStorage() {
+        var data = {};
+        document.querySelectorAll('#producto input, #estandar input, #real input').forEach(function(el) {
+            data[el.id] = el.value;
+        });
+        try { sessionStorage.setItem(FORM_KEY, JSON.stringify(data)); } catch(e) {}
+    }
+
+    function restaurarFormStorage() {
+        try {
+            var saved = sessionStorage.getItem(FORM_KEY);
+            if (!saved) return;
+            var data = JSON.parse(saved);
+            Object.keys(data).forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) el.value = data[id];
+            });
+        } catch(e) {}
+    }
+
+    // Init
+    document.addEventListener('DOMContentLoaded', function() {
+        const session = FiNovaAuth.getSession();
+        if (session) {
+            document.getElementById('sidebarUserName').textContent = session.nombre;
+            document.getElementById('sidebarUserRole').textContent = session.role;
+            document.getElementById('sidebarAvatar').textContent = session.nombre.charAt(0).toUpperCase();
+        }
+        restaurarFormStorage();
+        calcularTodo();
+        cargarRegistros();
+    });
+    </script>
+</body>
+</html>

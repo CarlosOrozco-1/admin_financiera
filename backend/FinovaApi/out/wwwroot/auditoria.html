@@ -1,0 +1,571 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="FINOVA — Módulo de Auditoría y Control" />
+    <title>Auditoría | FINOVA</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/variables.css" />
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/layout.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <link rel="stylesheet" href="css/inventory.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/database.js"></script>
+    <script src="js/audit.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/theme.js"></script>
+  </head>
+  <body>
+    <div class="app-layout">
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <img
+            src="FINOVA-LOGO/Logotipo-Dark.png"
+            alt="FINOVA"
+            class="sidebar-logo"
+          />
+        </div>
+                    <nav class="sidebar-nav">
+                <span class="sidebar-section-label">Principal</span>
+                <a href="dashboard.html" class="sidebar-link">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    Dashboard
+                </a>
+                <a href="costos.html" class="sidebar-link">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
+                    Costos
+                </a>
+
+                <span class="sidebar-section-label">Inventarios</span>
+                <a href="inventario.html" class="sidebar-link">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                    Inventario
+                </a>
+                <a href="kardex.html" class="sidebar-link">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 22h14a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v4"/><polyline points="14 2 14 8 20 8"/><path d="M2 15h10"/><path d="M9 18l3-3-3-3"/></svg>
+                    Kardex
+                </a>
+                <a href="proyeccion.html" class="sidebar-link">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                    Proyección
+                </a>
+
+                <span class="sidebar-section-label">Sistema</span>
+                <a href="auditoria.html" class="sidebar-link active">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    Auditoría
+                </a>
+                <a href="usuarios.html" class="sidebar-link">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    Usuarios
+                </a>
+            </nav>
+        <div class="sidebar-footer">
+          <div class="sidebar-user">
+            <div class="sidebar-avatar" id="sidebarAvatar">A</div>
+            <div class="sidebar-user-info">
+              <div class="sidebar-user-name" id="sidebarUserName">Admin</div>
+              <div class="sidebar-user-role" id="sidebarUserRole">admin</div>
+            </div>
+          </div>
+          <button class="sidebar-logout" onclick="FiNovaAuth.logout()">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" /></svg
+            >Cerrar sesión
+          </button>
+        </div>
+      </aside>
+      <div
+        class="sidebar-overlay"
+        id="sidebarOverlay"
+        onclick="closeSidebar()"
+      ></div>
+
+      <div class="main-area">
+        <header class="top-bar">
+          <div class="top-bar-left">
+            <button class="mobile-menu-btn always-visible" onclick="toggleSidebar()" title="Mostrar u ocultar menú lateral" style="display:inline-flex !important; visibility:visible; opacity:1;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                    </button>
+            <div class="page-title-bar">
+              <h1 class="page-title">Auditoría y Control</h1>
+              <span class="page-breadcrumb">FINOVA / Auditoría</span>
+            </div>
+          </div>
+          <div class="top-bar-right">
+            <div class="theme-switcher">
+              <button
+                class="theme-btn"
+                id="btn-toggle-dark"
+                onclick="toggleClaroOscuro()"
+              >
+                <svg
+                  id="theme-icon-toggle"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  width="14"
+                  height="14"
+                >
+                  <path
+                    d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"
+                  ></path></svg
+                ><span id="theme-text-toggle">Tema</span>
+              </button>
+              <button
+                class="theme-btn"
+                id="btn-toggle-brisa"
+                onclick="toggleBrisa()"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  width="14"
+                  height="14"
+                >
+                  <path
+                    d="M12 22C17.5228 22 22 17.5228 22 12C22 11.5 22 9 18 9C17 9 16.5 9.5 15.5 9.5C14.5 9.5 13.5 8.5 13.5 7.5C13.5 6.5 14 6 14 5C14 2 11.5 2 9.5 2C4.5 2 2 6 2 11C2 17 6.5 22 12 22Z"
+                  />
+                  <circle cx="7.5" cy="10.5" r="1" fill="currentColor" />
+                  <circle cx="11.5" cy="7.5" r="1" fill="currentColor" />
+                  <circle cx="16.5" cy="11.5" r="1" fill="currentColor" /></svg
+                >Brisa
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <main class="page-container">
+          <!-- Stats -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon teal">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+              </div>
+              <div class="stat-info">
+                <div class="stat-label">Total registros</div>
+                <div class="stat-value" id="auditTotal">0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon blue">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+              </div>
+              <div class="stat-info">
+                <div class="stat-label">Usuarios activos</div>
+                <div class="stat-value" id="auditUsers">0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon green">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <rect x="3" y="3" width="7" height="7" />
+                  <rect x="14" y="3" width="7" height="7" />
+                  <rect x="14" y="14" width="7" height="7" />
+                  <rect x="3" y="14" width="7" height="7" />
+                </svg>
+              </div>
+              <div class="stat-info">
+                <div class="stat-label">Módulos registrados</div>
+                <div class="stat-value" id="auditModules">0</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chart -->
+          <div class="chart-container">
+            <div class="chart-title">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <line x1="18" y1="20" x2="18" y2="10" />
+                <line x1="12" y1="20" x2="12" y2="4" />
+                <line x1="6" y1="20" x2="6" y2="14" /></svg
+              >Actividad por Módulo
+            </div>
+            <div class="chart-wrapper" style="height: 220px">
+              <canvas id="auditChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Filters -->
+          <div class="filter-bar">
+            <div class="filter-group">
+              <label>Módulo</label>
+              <select id="filterModule" onchange="applyFilters()">
+                <option value="Todos">Todos</option>
+                <option>Login</option>
+                <option>Costos</option>
+                <option>Inventario</option>
+                <option>Proyección</option>
+                <option>Auditoría</option>
+                <option>Sistema</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Usuario</label>
+              <select id="filterUser" onchange="applyFilters()">
+                <option value="Todos">Todos</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Desde</label>
+              <input type="date" id="filterFrom" onchange="applyFilters()" />
+            </div>
+            <div class="filter-group">
+              <label>Hasta</label>
+              <input type="date" id="filterTo" onchange="applyFilters()" />
+            </div>
+            <div class="filter-group" style="justify-content: flex-end">
+              <label>&nbsp;</label>
+              <div style="display: flex; gap: 0.5rem">
+                <button
+                  class="btn btn-secondary"
+                  onclick="exportAuditExcel()"
+                  style="padding: 0.45rem 0.7rem; font-size: 0.78rem"
+                >
+                  Excel
+                </button>
+                <button
+                  class="btn btn-secondary"
+                  onclick="exportAuditPDF()"
+                  style="padding: 0.45rem 0.7rem; font-size: 0.78rem"
+                >
+                  PDF
+                </button>
+                <button
+                  class="btn btn-danger"
+                  onclick="clearAudit()"
+                  id="btnClear"
+                  style="padding: 0.45rem 0.7rem; font-size: 0.78rem"
+                >
+                  Limpiar
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Table -->
+          <div class="card">
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Fecha / Hora</th>
+                    <th>Usuario</th>
+                    <th>Módulo</th>
+                    <th>Acción</th>
+                    <th>Detalle</th>
+                  </tr>
+                </thead>
+                <tbody id="auditBody">
+                  <tr>
+                    <td colspan="5">
+                      <div class="empty-state">
+                        <p>No hay registros de auditoría</p>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <div class="toast" id="toast">
+      <div class="toast-icon">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          width="12"
+          height="12"
+        >
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+      </div>
+      <span class="toast-text" id="toastText"></span>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/excel-handler.js"></script>
+    <script src="js/pdf-export.js"></script>
+    <script>
+      if (!FiNovaAuth.requireAuth()) {
+      }
+      function toggleSidebar() {
+        const appLayout = document.querySelector('.app-layout');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        if (window.innerWidth <= 900) {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+            return;
+        }
+        if (appLayout) appLayout.classList.toggle('sidebar-collapsed');
+    }
+      function closeSidebar() {
+        document.getElementById("sidebar").classList.remove("open");
+        document.getElementById("sidebarOverlay").classList.remove("active");
+      }
+      function showToast(msg) {
+        const t = document.getElementById("toast");
+        document.getElementById("toastText").textContent = msg;
+        t.classList.add("show");
+        setTimeout(() => t.classList.remove("show"), 3000);
+      }
+
+      let auditChart = null;
+      let filteredRecords = [];
+
+      function getFilters() {
+        return {
+          modulo: document.getElementById("filterModule").value,
+          usuario: document.getElementById("filterUser").value,
+          fechaDesde: document.getElementById("filterFrom").value,
+          fechaHasta: document.getElementById("filterTo").value,
+        };
+      }
+
+      async function applyFilters() {
+        try {
+          filteredRecords = await FiNovaAudit.getFiltered(getFilters());
+        } catch (e) {
+          console.error("Error al filtrar auditoria:", e);
+          filteredRecords = [];
+        }
+        renderTable();
+      }
+
+      function renderTable() {
+        const body = document.getElementById("auditBody");
+        const records = filteredRecords.slice().reverse(); // Newest first
+
+        if (records.length === 0) {
+          body.innerHTML =
+            '<tr><td colspan="5"><div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><p>No se encontraron registros con los filtros actuales</p></div></td></tr>';
+          return;
+        }
+
+        body.innerHTML = records
+          .map((r) => {
+            const moduleColors = {
+              Login: "var(--accent)",
+              Costos: "#3b82f6",
+              Inventario: "var(--green)",
+              Proyección: "#e67e22",
+              Auditoría: "#e84670",
+              Sistema: "var(--text-muted)",
+            };
+            const color = moduleColors[r.modulo] || "var(--text-muted)";
+            return `<tr>
+                <td style="font-size:0.78rem; white-space:nowrap;">${FiNovaAudit.formatDate(r.fecha)}</td>
+                <td style="font-weight:550;">${r.usuarioNombre || r.usuario || "—"}</td>
+                <td><span style="display:inline-flex; align-items:center; gap:0.3rem; font-size:0.78rem; font-weight:600; color:${color};"><span style="width:6px;height:6px;border-radius:50%;background:${color};"></span>${r.modulo}</span></td>
+                <td style="font-weight:550;">${r.accion}</td>
+                <td style="font-size:0.8rem; color:var(--text-secondary);">${r.detalle}</td>
+            </tr>`;
+          })
+          .join("");
+      }
+
+      async function updateStats() {
+        const stats = await FiNovaAudit.getStats();
+        document.getElementById("auditTotal").textContent = stats.total;
+
+        // Mostrar usuarios activos: usar usuariosActivos del API o cantidad de claves en byUser
+        var usersCount =
+          stats.usuariosActivos || Object.keys(stats.byUser || {}).length;
+        document.getElementById("auditUsers").textContent = usersCount;
+
+        var moduleKeys = Object.keys(stats.byModule || {});
+        document.getElementById("auditModules").textContent = moduleKeys.length;
+
+        // Update user filter (solo disponible en modo localStorage)
+        const userSelect = document.getElementById("filterUser");
+        if (typeof FinovaAPI === "undefined") {
+          const currentUser = userSelect.value;
+          const users = Object.keys(stats.byUser || {});
+          userSelect.innerHTML =
+            '<option value="Todos">Todos</option>' +
+            users.map((u) => `<option value="${u}">${u}</option>`).join("");
+          userSelect.value = currentUser;
+        }
+
+        // Chart
+        renderChart(stats);
+      }
+
+      function renderChart(stats) {
+        const ctx = document.getElementById("auditChart").getContext("2d");
+        if (auditChart) auditChart.destroy();
+
+        var byModule = stats.byModule || {};
+        // Si byModule es un array (formato directo de API sin normalizar), convertirlo
+        if (Array.isArray(byModule)) {
+          var obj = {};
+          byModule.forEach(function (m) {
+            obj[m.modulo] = m.count;
+          });
+          byModule = obj;
+        }
+        const modules = Object.keys(byModule);
+        const counts = Object.values(byModule);
+        const colors = [
+          "#0d9488",
+          "#3b82f6",
+          "#22a06b",
+          "#e67e22",
+          "#e84670",
+          "#7c3aed",
+          "#8b9bb5",
+        ];
+
+        auditChart = new Chart(ctx, {
+          type: "doughnut",
+          data: {
+            labels: modules,
+            datasets: [
+              {
+                data: counts,
+                backgroundColor: colors.slice(0, modules.length),
+                borderWidth: 0,
+                hoverOffset: 6,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "right",
+                labels: {
+                  font: { family: "Inter", size: 11 },
+                  usePointStyle: true,
+                  pointStyle: "circle",
+                  padding: 12,
+                },
+              },
+            },
+            cutout: "65%",
+          },
+        });
+      }
+
+      function exportAuditExcel() {
+        const records = filteredRecords.slice().reverse();
+        const data = [["Fecha/Hora", "Usuario", "Módulo", "Acción", "Detalle"]];
+        records.forEach((r) =>
+          data.push([
+            FiNovaAudit.formatDate(r.fecha),
+            r.usuario,
+            r.modulo,
+            r.accion,
+            r.detalle,
+          ]),
+        );
+        FiNovaExcel.exportToExcel(data, "FINOVA_Auditoria", "Auditoría");
+        showToast("Auditoría exportada a Excel");
+      }
+
+      function exportAuditPDF() {
+        FiNovaPDF.exportAuditoria(filteredRecords.slice().reverse());
+        showToast("PDF de auditoría generado");
+      }
+
+      async function clearAudit() {
+        if (!FiNovaAuth.isAdmin()) {
+          showToast("Solo administradores pueden limpiar el historial");
+          return;
+        }
+        if (
+          confirm(
+            "\u00bfEst\u00e1 seguro de limpiar todo el historial de auditor\u00eda?",
+          )
+        ) {
+          await FiNovaAudit.clearAll();
+          FiNovaAudit.log(
+            "Auditor\u00eda",
+            "Limpiar historial",
+            "Historial de auditor\u00eda eliminado",
+          );
+          await refresh();
+          showToast("Historial limpiado");
+        }
+      }
+
+      async function refresh() {
+        try {
+          filteredRecords = await FiNovaAudit.getAll();
+        } catch (e) {
+          console.error("Error al cargar auditoria:", e);
+          filteredRecords = [];
+        }
+        renderTable();
+        await updateStats();
+      }
+
+      document.addEventListener("DOMContentLoaded", async function () {
+        const s = FiNovaAuth.getSession();
+        if (s) {
+          document.getElementById("sidebarUserName").textContent = s.nombre;
+          document.getElementById("sidebarUserRole").textContent = s.role;
+          document.getElementById("sidebarAvatar").textContent = s.nombre
+            .charAt(0)
+            .toUpperCase();
+        }
+        // Hide clear button for non-admin
+        if (!FiNovaAuth.isAdmin()) {
+          document.getElementById("btnClear").style.display = "none";
+        }
+        await refresh();
+      });
+    </script>
+  </body>
+</html>

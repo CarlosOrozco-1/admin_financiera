@@ -79,3 +79,9 @@ Para entregar la aplicación, el usuario final solo necesita recibir una carpeta
 - Copiar la carpeta a su escritorio o ubicación preferida.
 - Dar doble clic en `FinovaApi.exe`.
 - Una consola negra se abrirá (manteniendo el servidor en ejecución) y automáticamente se lanzará su navegador web predeterminado cargando la aplicación lista para usarse.
+
+# Comando para proceder con la Build
+-Moverse al directorio del backend (finovaApi)
+-cd backend\FinovaApi
+-correr el comando para la build
+(dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o out)

@@ -305,6 +305,8 @@ table .total-cell {
     max-height: 90vh;
     display: flex;
     flex-direction: column;
+    border-radius: 16px; /* Suavizado más notorio para la modal */
+    overflow: hidden;
 }
 
 .import-preview-header-info {
@@ -319,18 +321,21 @@ table .total-cell {
 }
 
 .import-preview-stat-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
     gap: 1rem;
     margin-bottom: 1.5rem;
+    justify-content: flex-start;
 }
 
 .import-preview-stat {
     background: var(--bg-secondary);
-    padding: 1rem;
-    border-radius: var(--radius);
+    padding: 1rem 1.5rem;
+    border-radius: 12px; /* Suavizado en las tarjetas de stats */
     text-align: center;
     border: 1px solid var(--border);
+    min-width: 120px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
 .import-preview-stat-valid {
@@ -368,10 +373,11 @@ table .total-cell {
     overflow-y: auto;
     flex: 1;
     border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border-radius: 12px; /* Suavizado en la tabla */
     background: var(--bg-primary);
     margin-bottom: 1.5rem;
     min-height: 200px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
 }
 
 .import-preview-table {
