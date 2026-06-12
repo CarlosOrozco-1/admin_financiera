@@ -182,12 +182,72 @@ const FiNovaExcel = (function () {
         }).filter(item => item.nombre || item.codigo);
     }
 
+    /**
+     * Mapea datos de Excel a formato de proyeccion
+     * @param {Array<Object>} data
+     * @returns {Array<Object>}
+     */
+    function mapToProyeccion(data) {
+        return data.map(row => {
+            const keys = Object.keys(row);
+            return {
+                codigo: row.Codigo || row.codigo || row.Código || row['Código'] || '',
+                nombre: row.Nombre || row.nombre || row.Producto || row.producto || row[keys[0]] || '',
+                cantidadActual: parseFloat(row.Cantidad || row.cantidad || row.Stock || row.stock || row.CantidadActual || row[keys[1]] || 0),
+                cantidadProyectada: 0,
+                diferencia: 0,
+                porcentaje: '0%'
+            };
+        }).filter(item => item.nombre || item.codigo);
+    }
+
+    /**
+     * Valida los datos mapeados para la vista previa
+     * @param {Array<Object>} data 
+     * @param {string} module 
+     * @returns {Object} { valid: Array, errors: Array, summary: string }
+     */
+    function validateData(data, module) {
+        var validData = [];
+        var allErrors = [];
+        
+        data.forEach((item, index) => {
+            var rowNum = index + 2;
+            item._valid = true;
+            item._errors = [];
+
+            if (module === 'inventario') {
+                if (!item.codigo) item._errors.push({ row: rowNum, field: 'Código', message: 'Requerido' });
+                if (!item.nombre) item._errors.push({ row: rowNum, field: 'Producto', message: 'Requerido' });
+                if (isNaN(item.cantidad) || item.cantidad < 0) item._errors.push({ row: rowNum, field: 'Cantidad', message: 'Debe ser un número válido' });
+                if (isNaN(item.costoUnitario) || item.costoUnitario < 0) item._errors.push({ row: rowNum, field: 'Costo Unit.', message: 'Debe ser un número válido' });
+            } else if (module === 'proyeccion') {
+                if (!item.nombre && !item.codigo) item._errors.push({ row: rowNum, field: 'Producto', message: 'Requerido' });
+                if (isNaN(item.cantidadActual)) item._errors.push({ row: rowNum, field: 'Cantidad Actual', message: 'Debe ser un número' });
+            }
+
+            if (item._errors.length > 0) {
+                item._valid = false;
+                allErrors = allErrors.concat(item._errors);
+            }
+            validData.push(item);
+        });
+
+        return {
+            valid: validData,
+            errors: allErrors,
+            summary: ''
+        };
+    }
+
     return {
         importFile,
         importAsObjects,
         exportToExcel,
         exportObjectsToExcel,
         mapToCostos,
-        mapToInventario
+        mapToInventario,
+        mapToProyeccion,
+        validateData
     };
 })();
