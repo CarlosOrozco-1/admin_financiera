@@ -146,6 +146,7 @@
                                         fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
                                         <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
                                         <polyline points="17 21 17 13 7 13 7 21" /></svg>Guardar</button>
+                                <label class="btn btn-secondary" style="cursor:pointer;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Importar Excel<input type="file" accept=".xlsx,.xls" onchange="importProyeccion(event)" style="display:none;"></label>
                             </div>
                         </div>
                     </div>
@@ -278,6 +279,7 @@
     <script src="js/inventory.js"></script>
     <script src="js/inventory-projection.js"></script>
     <script src="js/excel-handler.js"></script>
+    <script src="js/import-preview.js"></script>
     <script src="js/pdf-export.js"></script>
     <script>
         if (!FiNovaAuth.requireAuth()) {}
@@ -463,9 +465,39 @@
 
         function exportProjPDF() {
             FiNovaPDF.exportProyeccion(currentProjection,
-            `Proyección - ${document.getElementById('projPeriod').value}`);
-            FiNovaAudit.log('Proyección', 'Exportar PDF', `${currentProjection.length} productos`);
+            'Proyección - ' + document.getElementById('projPeriod').value);
+            FiNovaAudit.log('Proyección', 'Exportar PDF', currentProjection.length + ' productos');
             showToast('PDF generado');
+        }
+
+        function importProyeccion(event) {
+            var file = event.target.files[0];
+            if (!file) return;
+            FiNovaExcel.importAsObjects(file, function(err, data) {
+                if (err) { showToast('Error al leer el archivo'); return; }
+                var pct = parseFloat(document.getElementById('growthPct').value) || 15;
+                var mapped = FiNovaExcel.mapToProyeccion(data);
+                if (!mapped || mapped.length === 0) {
+                    showToast('No se encontraron datos válidos para proyección');
+                    return;
+                }
+                var validation = FiNovaExcel.validateData(mapped, 'proyeccion');
+                FiNovaImportPreview.show({
+                    module: 'proyeccion',
+                    data: validation.valid,
+                    validation: validation,
+                    fileName: file.name,
+                    onConfirm: function(validItems) {
+                        currentProjection = validItems;
+                        renderTable();
+                        renderChart();
+                        renderAnalysis();
+                        FiNovaAudit.log('Proyección', 'Importar Excel', validItems.length + ' productos importados');
+                        showToast(validItems.length + ' productos importados a la proyección');
+                    }
+                });
+            });
+            event.target.value = '';
         }
 
         // ---- PROYECCIONES GUARDADAS ----

@@ -175,6 +175,7 @@
     <script src="js/inventory.js"></script>
     <script src="js/kardex.js"></script>
     <script src="js/excel-handler.js"></script>
+    <script src="js/import-preview.js"></script>
     <script src="js/pdf-export.js"></script>
     <script>
     if (!FiNovaAuth.requireAuth()) {}
@@ -275,7 +276,7 @@
         document.getElementById('movDetalle').value = '';
         document.getElementById('movTitle').textContent = tipo === 'INGRESO' ? 'Registrar Ingreso' : 'Registrar Egreso';
         const btn = document.getElementById('movSubmitBtn');
-        btn.style.backgroundColor = tipo === 'INGRESO' ? 'var(--success)' : 'var(--danger)';
+        btn.style.backgroundColor = ''; // Remove inline background color
         document.getElementById('movModal').classList.add('active');
     }
 
@@ -351,12 +352,29 @@
     async function importInventory(e) {
         const file = e.target.files[0];
         if (!file) return;
-        FiNovaExcel.importAsObjects(file, async function(err, data) {
-            if (err) { showToast('Error al leer archivo'); return; }
-            const mapped = FiNovaExcel.mapToInventario(data);
-            const count = await FiNovaInventory.importFromExcel(mapped);
-            showToast(count + ' productos importados');
-            await refresh();
+        FiNovaExcel.importAsObjects(file, function(err, data) {
+            if (err) { showToast('Error al leer el archivo'); return; }
+            var mapped = FiNovaExcel.mapToInventario(data);
+            if (!mapped || mapped.length === 0) {
+                showToast('No se encontraron datos válidos en el archivo');
+                return;
+            }
+            var validation = FiNovaExcel.validateData(mapped, 'inventario');
+            FiNovaImportPreview.show({
+                module: 'inventario',
+                data: validation.valid,
+                validation: validation,
+                fileName: file.name,
+                onConfirm: async function(validItems) {
+                    try {
+                        var count = await FiNovaInventory.importFromExcel(validItems);
+                        showToast(count + ' productos importados correctamente');
+                        await refresh();
+                    } catch (err) {
+                        showToast('Error al importar: ' + err.message);
+                    }
+                }
+            });
         });
         e.target.value = '';
     }

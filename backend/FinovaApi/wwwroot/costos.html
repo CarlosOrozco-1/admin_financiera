@@ -300,6 +300,7 @@
     <script src="js/analysis.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/excel-handler.js"></script>
+    <script src="js/import-preview.js"></script>
     <script src="js/pdf-export.js"></script>
     <script>
     // Auth
@@ -418,27 +419,37 @@
         FiNovaExcel.importFile(file, function(err, data) {
             if (err) { showToast('Error al leer el archivo'); return; }
             const mapped = FiNovaExcel.mapToCostos(data);
-            if (mapped) {
-                if (mapped.producto) document.getElementById('nombreProducto').value = mapped.producto;
-                if (mapped.codigo) document.getElementById('codigoProducto').value = mapped.codigo;
-                document.getElementById('mpCantEst').value = mapped.estandar.mpCant || '';
-                document.getElementById('mpPrecioEst').value = mapped.estandar.mpPrecio || '';
-                document.getElementById('moCantEst').value = mapped.estandar.moCant || '';
-                document.getElementById('moPrecioEst').value = mapped.estandar.moPrecio || '';
-                document.getElementById('ciCantEst').value = mapped.estandar.ciCant || '';
-                document.getElementById('ciPrecioEst').value = mapped.estandar.ciPrecio || '';
-                document.getElementById('mpCantReal').value = mapped.real.mpCant || '';
-                document.getElementById('mpPrecioReal').value = mapped.real.mpPrecio || '';
-                document.getElementById('moCantReal').value = mapped.real.moCant || '';
-                document.getElementById('moPrecioReal').value = mapped.real.moPrecio || '';
-                document.getElementById('ciCantReal').value = mapped.real.ciCant || '';
-                document.getElementById('ciPrecioReal').value = mapped.real.ciPrecio || '';
-                calcularTodo();
-                FiNovaAudit.log('Costos', 'Importar Excel', `Archivo: ${file.name}`);
-                showToast('Datos importados desde Excel');
-            } else {
+            if (!mapped) {
                 showToast('No se pudieron mapear los datos del archivo');
+                return;
             }
+            FiNovaImportPreview.show({
+                module: 'costos',
+                data: [mapped],
+                validation: { valid: [mapped], errors: [], summary: '1 registro de costos detectado' },
+                fileName: file.name,
+                onConfirm: function(costosData) {
+                    var item = Array.isArray(costosData) ? costosData[0] : costosData;
+                    if (item.producto) document.getElementById('nombreProducto').value = item.producto;
+                    if (item.codigo) document.getElementById('codigoProducto').value = item.codigo;
+                    if (item.cantidad) document.getElementById('cantidadProducida').value = item.cantidad;
+                    document.getElementById('mpCantEst').value = item.estandar.mpCant || '';
+                    document.getElementById('mpPrecioEst').value = item.estandar.mpPrecio || '';
+                    document.getElementById('moCantEst').value = item.estandar.moCant || '';
+                    document.getElementById('moPrecioEst').value = item.estandar.moPrecio || '';
+                    document.getElementById('ciCantEst').value = item.estandar.ciCant || '';
+                    document.getElementById('ciPrecioEst').value = item.estandar.ciPrecio || '';
+                    document.getElementById('mpCantReal').value = item.real.mpCant || '';
+                    document.getElementById('mpPrecioReal').value = item.real.mpPrecio || '';
+                    document.getElementById('moCantReal').value = item.real.moCant || '';
+                    document.getElementById('moPrecioReal').value = item.real.moPrecio || '';
+                    document.getElementById('ciCantReal').value = item.real.ciCant || '';
+                    document.getElementById('ciPrecioReal').value = item.real.ciPrecio || '';
+                    calcularTodo();
+                    FiNovaAudit.log('Costos', 'Importar Excel', 'Archivo: ' + file.name);
+                    showToast('Datos de costos importados desde Excel');
+                }
+            });
         });
         event.target.value = '';
     }
